@@ -1,7 +1,0 @@
-/build/
-/dist/
-*.o
-*.a
-*.so
-.DS_Store
-.vscode/
