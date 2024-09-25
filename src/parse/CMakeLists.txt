@@ -6,6 +6,7 @@ add_library(parse STATIC
     parse_ip_ip6.c
     parse_tcp.c
     parse_udp.c
+    parse.c
 )
 
 # 设置包含目录
