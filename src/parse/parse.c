@@ -1,7 +1,7 @@
 #include "parse.h"
 
 void parse_func(unsigned char *user, const struct pcap_pkthdr *pkthdr,
-                    const unsigned char *packet) {
+                const unsigned char *packet) {
     struct ether_header *eth_header = (struct ether_header *)packet;
 
     switch (ntohs(eth_header->ether_type)) {

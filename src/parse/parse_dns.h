@@ -4,8 +4,8 @@
 #define _GNU_SOURCE
 #endif
 
-#include <stdio.h>
 #include <netinet/ether.h>
+#include <stdio.h>
 
 #include "../lib/write.h"
 

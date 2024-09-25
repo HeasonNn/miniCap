@@ -12,6 +12,15 @@
 
 #include "../lib/format_utils.h"
 #include "../lib/write.h"
+#include "parse_tls/parse_tls.h"
+
+#ifndef TLS_PORT
+#define TLS_PORT 443
+#endif
+
+#ifndef SSL_PORT
+#define SSL_PORT TLS_PORT
+#endif
 
 void parse_tcp(const char *device_name, const struct pcap_pkthdr *pkthdr,
                const unsigned char *packet, const struct ip *ip_header,

@@ -7,6 +7,7 @@ add_library(parse STATIC
     parse_tcp.c
     parse_udp.c
     parse.c
+    parse_tls/parse_tls.c
 )
 
 # 设置包含目录

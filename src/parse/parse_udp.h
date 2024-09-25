@@ -12,7 +12,6 @@
 
 #include "../lib/format_utils.h"
 #include "../lib/write.h"
-
 #include "parse_dns.h"
 
 #ifndef DNS_PORT

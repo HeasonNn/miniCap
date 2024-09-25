@@ -11,10 +11,9 @@
 
 #include "../lib/format_utils.h"
 #include "../lib/write.h"
-
+#include "parse_icmp_icmp6.h"
 #include "parse_tcp.h"
 #include "parse_udp.h"
-#include "parse_icmp_icmp6.h"
 
 void parse_ip(const char *device_name, const struct pcap_pkthdr *pkthdr,
               const unsigned char *packet);

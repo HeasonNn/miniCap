@@ -12,4 +12,4 @@
 #include "parse_ip_ip6.h"
 
 void parse_func(unsigned char *user, const struct pcap_pkthdr *pkthdr,
-           const unsigned char *packet);
+                const unsigned char *packet);
