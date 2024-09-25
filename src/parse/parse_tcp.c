@@ -16,13 +16,15 @@ void parse_tcp(const char *device_name, const struct pcap_pkthdr *pkthdr,
     char time_str[64];
     get_timestamp(time_str, sizeof(time_str));
 
-    write_to_file(device_name, src_ip, dst_ip, src_port, dst_port, protocol,
-                  packet_size, NULL);
-    printf(
-        "[%s] Captured packet on %s: Src IP: %s, Dst IP: %s, Src Port: %d, Dst "
-        "Port: %d, Protocol: %s, Packet Size: %d bytes\n",
-        time_str, device_name, src_ip, dst_ip, src_port, dst_port, protocol,
-        packet_size);
+    struct tcp_udp_data_t tcp_data = {.dev_name = device_name,
+                                  .src_ip = src_ip,
+                                  .dst_ip = dst_ip,
+                                  .src_port = src_port,
+                                  .dst_port = dst_port,
+                                  .protocol = protocol,
+                                  .packet_size = packet_size};
+
+    write_to_file_2(write_tcp_to_file, &tcp_data, device_name);
 
     return;
 }

@@ -10,38 +10,30 @@ void parse_icmp(const char *device_name, const struct pcap_pkthdr *pkthdr,
     char time_str[64];
     get_timestamp(time_str, sizeof(time_str));
 
+    const char *protocol = "ICMP";
     switch (icmp_header->type) {
         case ICMP_ECHO:
-            printf(
-                "[%s] Captured packet on %s: ICMP Echo Request from %s to %s, "
-                "Packet "
-                "Size: %d bytes\n",
-                time_str, device_name, src_ip, dst_ip, packet_size);
+            protocol = "ICMP Echo Request";
             break;
 
         case ICMP_ECHOREPLY:
-            printf(
-                "[%s] Captured packet on %s: ICMP Echo Reply from %s to %s, "
-                "Packet "
-                "Size: %d bytes\n",
-                time_str, device_name, src_ip, dst_ip, packet_size);
+            protocol = "ICMP Echo Reply";
             break;
 
         case ICMP_DEST_UNREACH:
-            printf(
-                "[%s] Captured packet on %s: ICMP Destination Unreachable from "
-                "%s to "
-                "%s, Packet Size: %d bytes\n",
-                time_str, device_name, src_ip, dst_ip, packet_size);
+            protocol = "ICMP Destination Unreachable";
             break;
 
         default:
-            printf(
-                "[%s] Captured packet on %s: Other ICMP Type: %d from %s to "
-                "%s, "
-                "Packet Size: %d bytes\n",
-                time_str, device_name, icmp_header->type, src_ip, dst_ip,
-                packet_size);
             break;
     }
+
+    struct icmp_data_t icmp_data_for_write = {
+        .dev_name = device_name,
+        .src_ip = src_ip,
+        .dst_ip = dst_ip,
+        .protocol = protocol,
+    };
+
+    write_to_file_2(write_icmp_to_file, &icmp_data_for_write, device_name);
 }

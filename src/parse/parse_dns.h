@@ -19,6 +19,4 @@ struct dns_header {
 };
 
 void parse_dns(const unsigned char *packet, int ip_header_len,
-               int udp_header_len, int packet_size, const char *device_name,
-               const char *src_ip, const char *dst_ip, int src_port,
-               int dst_port);
+               int udp_header_len, struct tcp_udp_data_t *dns_data);

@@ -8,7 +8,9 @@
 #include <pcap.h>
 #include <stdio.h>
 #include <net/ethernet.h>
+#include <net/if_arp.h>
 
+#include "../lib/write.h"
 #include "../lib/format_utils.h"
 
 #ifndef MAC_ADDR_LEN

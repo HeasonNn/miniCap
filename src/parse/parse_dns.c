@@ -1,14 +1,12 @@
 #include "parse_dns.h"
 
 void parse_dns(const unsigned char *packet, int ip_header_len,
-               int udp_header_len, int packet_size, const char *device_name,
-               const char *src_ip, const char *dst_ip, int src_port,
-               int dst_port) {
+               int udp_header_len, struct tcp_udp_data_t *udp_data) {
     struct dns_header *dns =
         (struct dns_header *)(packet + sizeof(struct ether_header) +
                               ip_header_len + udp_header_len);
-    int dns_size = packet_size - (sizeof(struct ether_header) + ip_header_len +
-                                  udp_header_len);
+    int dns_size = udp_data->packet_size - (sizeof(struct ether_header) +
+                                            ip_header_len + udp_header_len);
 
     // Check if the DNS packet size is valid
     if (dns_size < sizeof(struct dns_header)) {
@@ -32,9 +30,10 @@ void parse_dns(const unsigned char *packet, int ip_header_len,
     }
     domain_name[pos] = '\0';
 
-    char time_str[64];
-    get_timestamp(time_str, sizeof(time_str));
-    write_to_file(device_name, src_ip, dst_ip, src_port, dst_port, "DNS",
-                  packet_size, domain_name);
-    printf("[%s] DNS Query: %s\n", time_str, domain_name);
+    struct dns_data_t dns_data_for_write = {
+        .udp_data = udp_data,
+        .dns_query = domain_name,
+    };
+
+    write_to_file_2(write_dns_to_file, &dns_data_for_write, udp_data->dev_name);
 }

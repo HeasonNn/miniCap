@@ -10,24 +10,22 @@ void parse_udp(const char *device_name, const struct pcap_pkthdr *pkthdr,
                           sizeof(struct ip));
     src_port = ntohs(udp_header->source);
     dst_port = ntohs(udp_header->dest);
+    int packet_size = pkthdr->caplen;
+
+    struct tcp_udp_data_t udp_data = {.dev_name = device_name,
+                                      .src_ip = src_ip,
+                                      .dst_ip = dst_ip,
+                                      .src_port = src_port,
+                                      .dst_port = dst_port,
+                                      .protocol = protocol,
+                                      .packet_size = packet_size};
 
     if (src_port == DNS_PORT || dst_port == DNS_PORT) {
         int ip_header_len = ip_header->ip_hl * 4;
         int udp_header_len = sizeof(struct udphdr);
-        parse_dns(packet, ip_header_len, udp_header_len, pkthdr->caplen,
-                  device_name, src_ip, dst_ip, src_port, dst_port);
+        parse_dns(packet, ip_header_len, udp_header_len, &udp_data);
         return;
     }
 
-    int packet_size = pkthdr->caplen;
-    char time_str[64];
-    get_timestamp(time_str, sizeof(time_str));
-
-    write_to_file(device_name, src_ip, dst_ip, src_port, dst_port, protocol,
-                  packet_size, NULL);
-    printf(
-        "[%s] Captured packet on %s: Src IP: %s, Dst IP: %s, Src Port: %d, Dst "
-        "Port: %d, Protocol: %s, Packet Size: %d bytes\n",
-        time_str, device_name, src_ip, dst_ip, src_port, dst_port, protocol,
-        packet_size);
+    write_to_file_2(write_udp_to_file, &udp_data, device_name);
 }

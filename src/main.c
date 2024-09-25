@@ -1,12 +1,6 @@
 #define _GNU_SOURCE
 
-#include <arpa/inet.h>
 #include <event2/event.h>
-#include <netinet/ether.h>
-#include <netinet/ip.h>
-#include <netinet/ip_icmp.h>
-#include <netinet/tcp.h>
-#include <netinet/udp.h>
 #include <pcap.h>
 #include <pthread.h>
 #include <stdlib.h>
@@ -15,11 +9,7 @@
 #include "lib/format_utils.h"
 #include "lib/write.h"
 #include "parse/parse_arp.h"
-#include "parse/parse_dns.h"
-#include "parse/parse_icmp_icmp6.h"
 #include "parse/parse_ip_ip6.h"
-#include "parse/parse_tcp.h"
-#include "parse/parse_udp.h"
 
 struct pcap_thread_args {
     pcap_t *handle;
@@ -49,7 +39,7 @@ void packet_handler(unsigned char *user, const struct pcap_pkthdr *pkthdr,
         default:
             char time_str[64];
             get_timestamp(time_str, sizeof(time_str));
-            printf("[%s] Non-IP packet on device %s, Ether Type: 0x%04x\n",
+            printf("[%s] Unknow packet on device %s, Ether Type: 0x%04x\n",
                    time_str, (const char *)user, ntohs(eth_header->ether_type));
             break;
     }
