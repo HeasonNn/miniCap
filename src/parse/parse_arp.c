@@ -3,6 +3,8 @@
 void parse_arp(const char *user, const struct pcap_pkthdr *pkthdr,
                const unsigned char *packet,
                const struct ether_header *eth_header) {
+    if (!config.parse_arp) return;
+    
     struct arphdr *arphdr =
         (struct arphdr *)(packet + sizeof(struct ether_header));
     char dst_mac[MAC_ADDR_LEN], src_mac[MAC_ADDR_LEN];

@@ -3,6 +3,8 @@
 void parse_udp(const char *device_name, const struct pcap_pkthdr *pkthdr,
                const unsigned char *packet, const struct ip *ip_header,
                char *src_ip, char *dst_ip) {
+    if (!config.parse_udp) return;
+    
     const char *protocol = "UDP";
     int src_port = 0, dst_port = 0;
     struct udphdr *udp_header =

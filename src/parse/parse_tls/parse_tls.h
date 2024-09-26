@@ -58,6 +58,7 @@ ClientHello:
     +-----------------------------------------------------------+
     | Extensions Length (2 bytes) | Extensions (variable)       |
     +-----------------------------------------------------------+
+
     Handshake Type : 0x01 -> client
 
 
@@ -77,6 +78,7 @@ ServerHello:
     +-----------------------------------------------------------+
     | Extensions Length (2 bytes) | Extensions (variable)       |
     +-----------------------------------------------------------+
+
     Handshake Type : 0x02 -> server
 
 
@@ -95,6 +97,11 @@ struct tls_record_t {
     uint8_t payload[MAX_PAYLOAD_SIZE];
 };
 
+#define TLS_RECORD_TYPE_CHANGE_CIPHER_SPEC 0x14
+#define TLS_RECORD_TYPE_ALERT              0x15
+#define TLS_RECORD_TYPE_HANDSHAKE          0x16
+#define TLS_RECORD_TYPE_APPLICATION_DATA   0x17
+
 struct tls_handshake_t {
     uint8_t handshake_type;     // Handshake Type (1 byte)
     uint8_t length[3];          // Length (3 bytes)
@@ -103,33 +110,28 @@ struct tls_handshake_t {
     uint8_t session_id_length;  // Session ID Length (1 byte)
 };
 
-struct client_hello_t {
-    struct tls_handshake_t tls_handshake;  // 通用的握手部分
-    // ClientHello 特有部分
-    uint8_t session_id[32];  // Session ID (固定长度，可以根据需求调整)
-    uint16_t
-        cipher_suites[16];  // Cipher Suites (固定长度，可以根据实际情况调整)
-    uint8_t compression_methods[16];  // Compression Methods
-                                      // (固定长度，可以根据实际情况调整)
-    uint16_t extensions_length;  // Extensions Length (2 bytes)
-    uint8_t extensions[256];  // Extensions (固定长度，可以根据实际情况调整)
+struct tls_client_hello_t {
+    struct tls_handshake_t tls_handshake;
+    uint8_t session_id[32];
+    uint16_t cipher_suites_length;
+    uint16_t cipher_suites[128];
+    uint8_t compression_methods_length;
+    uint8_t compression_methods[16];
+    uint16_t extensions_length;
+    uint8_t extensions[256];
 };
 
-struct server_hello_t {
-    struct tls_handshake_t tls_handshake;  // 通用的握手部分
-    // ServerHello 特有部分
-    uint8_t session_id[32];  // Session ID (固定长度，可以根据需求调整)
-    uint16_t cipher_suite;       // Cipher Suite (2 bytes)
-    uint8_t compression_method;  // Compression Method (1 byte)
-    uint16_t extensions_length;  // Extensions Length (2 bytes)
-    uint8_t extensions[256];  // Extensions (固定长度，可以根据实际情况调整)
+struct tls_server_hello_t {
+    struct tls_handshake_t tls_handshake;
+    uint8_t session_id[32];
+    uint16_t cipher_suite;
+    uint8_t compression_method;
+    uint16_t extensions_length;
+    uint8_t extensions[256];
 };
 
-#define TLS_RECORD_TYPE_CHANGE_CIPHER_SPEC 0x14
-#define TLS_RECORD_TYPE_ALERT              0x15
-#define TLS_RECORD_TYPE_HANDSHAKE          0x16
-#define TLS_RECORD_TYPE_APPLICATION_DATA   0x17
+#define TLS_CLIENT_HELLO 0x01
+#define TLS_SERVER_HELLO 0x02
 
 void parse_tls(const unsigned char *payload, int payload_len);
-
 void parse_tls_hello(const unsigned char *payload, int payload_len);

@@ -3,6 +3,8 @@
 void parse_tcp(const char *device_name, const struct pcap_pkthdr *pkthdr,
                const unsigned char *packet, const struct ip *ip_header,
                char *src_ip, char *dst_ip) {
+    if (!config.parse_tcp) return;
+
     const char *protocol = "TCP";
     int src_port = 0, dst_port = 0;
 
@@ -27,18 +29,18 @@ void parse_tcp(const char *device_name, const struct pcap_pkthdr *pkthdr,
         }
     }
 
-    char time_str[64];
-    get_timestamp(time_str, sizeof(time_str));
+    // char time_str[64];
+    // get_timestamp(time_str, sizeof(time_str));
 
-    struct tcp_udp_data_t tcp_data = {.dev_name = device_name,
-                                      .src_ip = src_ip,
-                                      .dst_ip = dst_ip,
-                                      .src_port = src_port,
-                                      .dst_port = dst_port,
-                                      .protocol = protocol,
-                                      .packet_size = packet_size};
+    // struct tcp_udp_data_t tcp_data = {.dev_name = device_name,
+    //                                   .src_ip = src_ip,
+    //                                   .dst_ip = dst_ip,
+    //                                   .src_port = src_port,
+    //                                   .dst_port = dst_port,
+    //                                   .protocol = protocol,
+    //                                   .packet_size = packet_size};
 
-    write_to_file_2(write_tcp_to_file, &tcp_data, device_name);
+    // write_to_file_2(write_tcp_to_file, &tcp_data, device_name);
 
     return;
 }

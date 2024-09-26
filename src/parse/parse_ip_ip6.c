@@ -2,6 +2,8 @@
 
 void parse_ip(const char *device_name, const struct pcap_pkthdr *pkthdr,
               const unsigned char *packet) {
+    if (!config.parse_ip) return;
+
     struct ip *ip_header = (struct ip *)(packet + sizeof(struct ether_header));
     char src_ip[INET_ADDRSTRLEN], dst_ip[INET_ADDRSTRLEN];
 
@@ -26,6 +28,8 @@ void parse_ip(const char *device_name, const struct pcap_pkthdr *pkthdr,
 void parse_ipv6(const char *device_name, const struct pcap_pkthdr *pkthdr,
                 const unsigned char *packet,
                 const struct ether_header *ether_header) {
+    if (!config.parse_ipv6) return;
+
     char time_str[64];
     get_timestamp(time_str, sizeof(time_str));
     printf("[%s] captured a ipv6 packet\n", time_str);

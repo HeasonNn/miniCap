@@ -2,6 +2,8 @@
 
 void parse_icmp(const char *device_name, const struct pcap_pkthdr *pkthdr,
                 const unsigned char *packet, char *src_ip, char *dst_ip) {
+    if (!config.parse_icmp) return;
+
     struct icmphdr *icmp_header =
         (struct icmphdr *)(packet + sizeof(struct ether_header) +
                            sizeof(struct ip));

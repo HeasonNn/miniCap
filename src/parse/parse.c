@@ -14,11 +14,15 @@ void parse_func(unsigned char *user, const struct pcap_pkthdr *pkthdr,
         case ETHERTYPE_ARP:
             parse_arp((const char *)user, pkthdr, packet, eth_header);
             break;
-        default:
-            char time_str[64];
-            get_timestamp(time_str, sizeof(time_str));
-            printf("[%s] Unknow packet on device %s, Ether Type: 0x%04x\n",
-                   time_str, (const char *)user, ntohs(eth_header->ether_type));
+        default: {
+            if (config.parse_unknow) {
+                char time_str[64];
+                get_timestamp(time_str, sizeof(time_str));
+                printf("[%s] Unknow packet on device %s, Ether Type: 0x%04x\n",
+                       time_str, (const char *)user,
+                       ntohs(eth_header->ether_type));
+            }
             break;
+        }
     }
 }

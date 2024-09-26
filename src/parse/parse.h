@@ -6,6 +6,7 @@
 
 #include <pcap.h>
 
+#include "../lib/config.h"
 #include "../lib/format_utils.h"
 #include "../lib/write.h"
 #include "parse_arp.h"

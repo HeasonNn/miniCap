@@ -2,6 +2,8 @@
 
 void parse_dns(const unsigned char *packet, int ip_header_len,
                int udp_header_len, struct tcp_udp_data_t *udp_data) {
+    if (!config.parse_dns) return;
+    
     struct dns_header *dns =
         (struct dns_header *)(packet + sizeof(struct ether_header) +
                               ip_header_len + udp_header_len);
