@@ -31,6 +31,8 @@ void parse_tls_hello(const unsigned char *payload, int payload_len) {
         struct tls_server_hello_t *tls_server_hello =
             (struct tls_server_hello_t *)handshake_message;
 
+        const char *protocol = "TLS/SSL";
+
         char random_str[65];
         char session_id_str[65];
 
@@ -40,21 +42,39 @@ void parse_tls_hello(const unsigned char *payload, int payload_len) {
                          tls_server_hello->tls_handshake.session_id_length,
                          session_id_str);
 
-        uint16_t protocol_version =
-            ntohs(tls_server_hello->tls_handshake.protocol_version);
         uint16_t cipher_suite = ntohs(tls_server_hello->cipher_suite);
         uint16_t extensions_length = ntohs(tls_server_hello->extensions_length);
 
+        switch (ntohs(tls_server_hello->tls_handshake.protocol_version)) {
+            case TLS_PROTOCOL_SSL3:
+                protocol = "SSL 3.0";
+                break;
+            case TLS_PROTOCOL_TLS1_0:
+                protocol = "TLS 1.0";
+                break;
+            case TLS_PROTOCOL_TLS1_1:
+                protocol = "TLS 1.1";
+                break;
+            case TLS_PROTOCOL_TLS1_2:
+                protocol = "TLS 1.2";
+                break;
+            case TLS_PROTOCOL_TLS1_3:
+                protocol = "TLS 1.3";
+                break;
+            default:
+                break;
+        }
+
         printf(
             "ServerHello detected: "
-            "Protocol Version: 0x%04x, "
+            "Protocol Version: %s, "
             "Random: %s, "
             "Session ID Length: %u, "
             "Session ID: %s, "
             "Cipher Suite: 0x%04x, "
             "Compression Method: %u, "
             "Extensions Length: %u\n",
-            protocol_version, random_str,
+            protocol, random_str,
             tls_server_hello->tls_handshake.session_id_length, session_id_str,
             cipher_suite, tls_server_hello->compression_method,
             extensions_length);
@@ -63,29 +83,50 @@ void parse_tls_hello(const unsigned char *payload, int payload_len) {
         struct tls_client_hello_t *tls_client_hello =
             (struct tls_client_hello_t *)handshake_message;
 
+        const char *protocol = "TLS/SSL";
+
         char random_str[65];
         char session_id_str[65];
+
         bytes_to_hex_str(tls_client_hello->tls_handshake.random, 32,
                          random_str);
         bytes_to_hex_str(tls_client_hello->session_id,
                          tls_client_hello->tls_handshake.session_id_length,
                          session_id_str);
 
-        uint16_t protocol_version =
-            ntohs(tls_client_hello->tls_handshake.protocol_version);
         uint16_t cipher_suites_length =
             ntohs(tls_client_hello->cipher_suites_length);
         uint16_t extensions_length = ntohs(tls_client_hello->extensions_length);
 
+        switch (ntohs(tls_client_hello->tls_handshake.protocol_version)) {
+            case TLS_PROTOCOL_SSL3:
+                protocol = "SSL 3.0";
+                break;
+            case TLS_PROTOCOL_TLS1_0:
+                protocol = "TLS 1.0";
+                break;
+            case TLS_PROTOCOL_TLS1_1:
+                protocol = "TLS 1.1";
+                break;
+            case TLS_PROTOCOL_TLS1_2:
+                protocol = "TLS 1.2";
+                break;
+            case TLS_PROTOCOL_TLS1_3:
+                protocol = "TLS 1.3";
+                break;
+            default:
+                break;
+        }
+
         printf(
             "ClientHello detected: "
-            "Protocol Version: 0x%04x, "
+            "Protocol Version: %s, "
             "Random: %s, "
             "Session ID Length: %u, "
             "Session ID: %s, "
             "Cipher Suites Length: %u, "
             "Cipher Suites: ",
-            protocol_version, random_str,
+            protocol, random_str,
             tls_client_hello->tls_handshake.session_id_length, session_id_str,
             cipher_suites_length);
 

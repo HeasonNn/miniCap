@@ -17,9 +17,11 @@
 #define MAX_PAYLOAD_SIZE 16384
 
 /*
+    Function:
     (1) parse ClientHello
     (2) parse ServerHello
     (3) parse Server certificate
+    (4) parse Application Data
 */
 
 /*
@@ -109,6 +111,12 @@ struct tls_handshake_t {
     uint8_t random[32];         // Random (32 bytes)
     uint8_t session_id_length;  // Session ID Length (1 byte)
 };
+
+#define TLS_PROTOCOL_SSL3   0x0300  // SSL 3.0 (Deprecated)
+#define TLS_PROTOCOL_TLS1_0 0x0301  // TLS 1.0
+#define TLS_PROTOCOL_TLS1_1 0x0302  // TLS 1.1
+#define TLS_PROTOCOL_TLS1_2 0x0303  // TLS 1.2
+#define TLS_PROTOCOL_TLS1_3 0x0304  // TLS 1.3
 
 struct tls_client_hello_t {
     struct tls_handshake_t tls_handshake;
