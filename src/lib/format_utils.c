@@ -25,3 +25,27 @@ void bytes_to_hex_str(const uint8_t *data, int length, char *output) {
     }
     output[length * 2] = '\0';
 }
+
+void print_binary_data(const unsigned char *data, int length) {
+    for (int i = 0; i < length; i += 16) {
+        int line_length = (i + 16 > length) ? length - i : 16;
+
+        // Print Hex representation
+        for (int j = 0; j < line_length; j++) {
+            printf("%02X ", data[i + j]);
+        }
+
+        // Padding for alignment
+        for (int j = line_length; j < 16; j++) {
+            printf("   ");
+        }
+
+        // Print ASCII representation
+        printf("  |  ");
+        for (int j = 0; j < line_length; j++) {
+            uint8_t byte = data[i + j];
+            printf("%c", isprint(byte) ? byte : '.');
+        }
+        printf("\n");
+    }
+}

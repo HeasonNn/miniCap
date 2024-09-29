@@ -18,6 +18,8 @@ void parse_tls(const unsigned char *payload, int payload_len) {
             break;
         case TLS_RECORD_TYPE_APPLICATION_DATA:
             printf("TLS_RECORD_TYPE_APPLICATION_DATA\n");
+            parse_tls_app_data((const unsigned char *)tls_record->payload,
+                               payload_len);
             break;
         default:
             break;
@@ -32,15 +34,6 @@ void parse_tls_hello(const unsigned char *payload, int payload_len) {
             (struct tls_server_hello_t *)handshake_message;
 
         const char *protocol = "TLS/SSL";
-
-        char random_str[65];
-        char session_id_str[65];
-
-        bytes_to_hex_str(tls_server_hello->tls_handshake.random, 32,
-                         random_str);
-        bytes_to_hex_str(tls_server_hello->session_id,
-                         tls_server_hello->tls_handshake.session_id_length,
-                         session_id_str);
 
         uint16_t cipher_suite = ntohs(tls_server_hello->cipher_suite);
         uint16_t extensions_length = ntohs(tls_server_hello->extensions_length);
@@ -61,21 +54,20 @@ void parse_tls_hello(const unsigned char *payload, int payload_len) {
             case TLS_PROTOCOL_TLS1_3:
                 protocol = "TLS 1.3";
                 break;
-            default:
-                break;
         }
 
+        printf("ServerHello detected: Protocol Version: %s\n", protocol);
+
+        printf("Random (Hex + ASCII):\n");
+        print_binary_data(tls_server_hello->tls_handshake.random, 32);
+
+        printf("Session ID (Hex + ASCII):\n");
+        print_binary_data(tls_server_hello->session_id,
+                          tls_server_hello->tls_handshake.session_id_length);
+
         printf(
-            "ServerHello detected: "
-            "Protocol Version: %s, "
-            "Random: %s, "
-            "Session ID Length: %u, "
-            "Session ID: %s, "
-            "Cipher Suite: 0x%04x, "
-            "Compression Method: %u, "
-            "Extensions Length: %u\n",
-            protocol, random_str,
-            tls_server_hello->tls_handshake.session_id_length, session_id_str,
+            "Cipher Suite: 0x%04x, Compression Method: %u, Extensions Length: "
+            "%u\n",
             cipher_suite, tls_server_hello->compression_method,
             extensions_length);
 
@@ -84,15 +76,6 @@ void parse_tls_hello(const unsigned char *payload, int payload_len) {
             (struct tls_client_hello_t *)handshake_message;
 
         const char *protocol = "TLS/SSL";
-
-        char random_str[65];
-        char session_id_str[65];
-
-        bytes_to_hex_str(tls_client_hello->tls_handshake.random, 32,
-                         random_str);
-        bytes_to_hex_str(tls_client_hello->session_id,
-                         tls_client_hello->tls_handshake.session_id_length,
-                         session_id_str);
 
         uint16_t cipher_suites_length =
             ntohs(tls_client_hello->cipher_suites_length);
@@ -118,29 +101,51 @@ void parse_tls_hello(const unsigned char *payload, int payload_len) {
                 break;
         }
 
-        printf(
-            "ClientHello detected: "
-            "Protocol Version: %s, "
-            "Random: %s, "
-            "Session ID Length: %u, "
-            "Session ID: %s, "
-            "Cipher Suites Length: %u, "
-            "Cipher Suites: ",
-            protocol, random_str,
-            tls_client_hello->tls_handshake.session_id_length, session_id_str,
-            cipher_suites_length);
+        printf("ClientHello detected: Protocol Version: %s\n", protocol);
 
-        for (int i = 0; i < cipher_suites_length / 2; ++i) {
-            printf("0x%04x ", ntohs(tls_client_hello->cipher_suites[i]));
-        }
+        printf("Random (Hex + ASCII):\n");
+        print_binary_data(tls_client_hello->tls_handshake.random, 32);
 
-        printf(", Compression Methods Length: %u, Compression Methods: ",
+        printf("Session ID (Hex + ASCII):\n");
+        print_binary_data(tls_client_hello->session_id,
+                          tls_client_hello->tls_handshake.session_id_length);
+
+        printf("Cipher Suites Length: %u, Cipher Suites:\n",
+               cipher_suites_length);
+        print_binary_data((unsigned char *)tls_client_hello->cipher_suites,
+                          cipher_suites_length);
+
+        printf("Compression Methods Length: %u, Compression Methods:\n",
                tls_client_hello->compression_methods_length);
+        print_binary_data(
+            (unsigned char *)tls_client_hello->compression_methods,
+            tls_client_hello->compression_methods_length);
 
-        for (int i = 0; i < tls_client_hello->compression_methods_length; ++i) {
-            printf("0x%02x ", tls_client_hello->compression_methods[i]);
-        }
-
-        printf(", Extensions Length: %u\n", extensions_length);
+        printf("Extensions Length: %u\n", extensions_length);
     }
+}
+
+void parse_tls_app_data(const unsigned char *payload, int payload_len) {
+    int header_size = sizeof(struct tls_application_data_t);
+
+    if (payload_len < header_size) {
+        printf(
+            "Payload too short to be a valid TLS Application Data record.\n");
+        return;
+    }
+
+    struct tls_application_data_t tls_header;
+    tls_header.content_type = payload[0];
+    tls_header.version = (payload[1] << 8) | payload[2];
+    tls_header.length = (payload[3] << 8) | payload[4];
+
+    if (payload_len < header_size + tls_header.length) {
+        printf("Incomplete TLS Application Data.\n");
+        return;
+    }
+
+    const unsigned char *encrypted_data = payload + header_size;
+
+    printf("Encrypted Data (Hex + ASCII):\n");
+    print_binary_data(encrypted_data, tls_header.length);
 }

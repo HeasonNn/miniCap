@@ -141,5 +141,12 @@ struct tls_server_hello_t {
 #define TLS_CLIENT_HELLO 0x01
 #define TLS_SERVER_HELLO 0x02
 
+struct tls_application_data_t {
+    uint8_t content_type;     // Content Type (1 byte)
+    uint16_t version;         // Protocol Version (2 bytes)
+    uint16_t length;          // Length of encrypted data (2 bytes)
+};
+
 void parse_tls(const unsigned char *payload, int payload_len);
 void parse_tls_hello(const unsigned char *payload, int payload_len);
+void parse_tls_app_data(const unsigned char *payload, int payload_len);
