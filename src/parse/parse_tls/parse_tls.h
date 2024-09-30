@@ -143,11 +143,13 @@ struct tls_server_hello_t {
 #define TLS_CLIENT_HELLO 0x01
 #define TLS_SERVER_HELLO 0x02
 
+#pragma pack(1)
 struct tls_app_data_header_t {
     uint8_t content_type;  // Content Type (1 byte)
     uint16_t version;      // Protocol Version (2 bytes)
     uint16_t length;       // Length of encrypted data (2 bytes)
 };
+#pragma pack()
 
 struct tls_fragment_cache {
     unsigned char *data;

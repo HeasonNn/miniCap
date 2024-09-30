@@ -200,9 +200,16 @@ void parse_tls_app_data(FiveTuple *five_tuple, const unsigned char *payload,
     tls_app_data_header.version = (payload[1] << 8) | payload[2];
     tls_app_data_header.length = (payload[3] << 8) | payload[4];
 
+    // printf("Payload Length: %d\n", payload_len);
+    // printf("Header Size: %ld\n", sizeof(struct tls_app_data_header_t));
+    // printf("Content Type: 0x%02x\n", tls_app_data_header.content_type);
+    // printf("Version: 0x%04x (TLS version %d.%d)\n", tls_app_data_header.version,
+    //        (tls_app_data_header.version >> 8),
+    //        (tls_app_data_header.version & 0xFF));
+    // printf("Length: %d\n", tls_app_data_header.length);
+
     if (tls_app_data_header.length <= 0 ||
-        tls_app_data_header.length >
-            MAX_PAYLOAD_SIZE) {
+        tls_app_data_header.length > MAX_PAYLOAD_SIZE) {
         printf("Error: Invalid TLS length field: %d\n",
                tls_app_data_header.length);
         return;
@@ -247,25 +254,18 @@ void parse_tls_app_data(FiveTuple *five_tuple, const unsigned char *payload,
 
         append_fragment_to_cache(cache, payload + header_size,
                                  payload_len - header_size);
-        return;
     }
 
-    // 如果没有缓存数据，则解析当前片段
     if (cache->data == NULL || cache->current_offset == 0) {
         const unsigned char *encrypted_data = payload + header_size;
         printf("Encrypted Data (Hex + ASCII):\n");
         print_binary_data(encrypted_data, tls_app_data_header.length);
     } else {
-        // 如果已经有缓存的数据，合并并输出
         printf("Reassembling TLS fragments...\n");
 
-        // 将当前片段数据添加到缓存
-        append_fragment_to_cache(cache, payload + header_size,
-                                 tls_app_data_header.length);
-
-        // 检查缓存的数据长度是否满足 TLS 片段要求
+        // printf("Current offset: %d\n", cache->current_offset);
+        
         if (cache->current_offset >= tls_app_data_header.length) {
-            // 打印缓存中完整的重组数据
             printf("Reassembled Encrypted Data (Hex + ASCII):\n");
             print_binary_data(cache->data, cache->current_offset);
 

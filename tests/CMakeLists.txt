@@ -1,5 +1,10 @@
-add_executable(test_hash_table test_hash_table.c)
+set(COMMON_LIBS mylib parse pcap event pthread)
 
-target_link_libraries(test_hash_table PRIVATE mylib parse pcap event pthread)
+function(add_test_executable TEST_NAME SOURCE_FILE)
+    add_executable(${TEST_NAME} ${SOURCE_FILE})
+    target_link_libraries(${TEST_NAME} PRIVATE ${COMMON_LIBS})
+    add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
+endfunction()
 
-add_test(NAME HashTableTest COMMAND test_hash_table)
+add_test_executable(test_hash_table test_hash_table.c)
+add_test_executable(test_parse_tls_app_data test_parse_tls_app_data.c)
