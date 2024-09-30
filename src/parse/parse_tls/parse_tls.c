@@ -1,6 +1,9 @@
 #include "parse_tls.h"
 
-void parse_tls(const unsigned char *payload, int payload_len) {
+static HashTable *tls_hash_table = NULL;
+
+void parse_tls(FiveTuple *five_tuple, const unsigned char *payload,
+               int payload_len) {
     if (!config.parse_tls) return;
 
     struct tls_record_t *tls_record = (struct tls_record_t *)payload;
@@ -18,7 +21,7 @@ void parse_tls(const unsigned char *payload, int payload_len) {
             break;
         case TLS_RECORD_TYPE_APPLICATION_DATA:
             printf("TLS_RECORD_TYPE_APPLICATION_DATA\n");
-            parse_tls_app_data((const unsigned char *)tls_record->payload,
+            parse_tls_app_data(five_tuple, (const unsigned char *)tls_record,
                                payload_len);
             break;
         default:
@@ -125,8 +128,66 @@ void parse_tls_hello(const unsigned char *payload, int payload_len) {
     }
 }
 
-void parse_tls_app_data(const unsigned char *payload, int payload_len) {
-    int header_size = sizeof(struct tls_application_data_t);
+void init_fragment_cache(struct tls_fragment_cache *cache, int total_length) {
+    if (total_length <= 0) {
+        printf(
+            "Error: Invalid total_length for fragment cache initialization.\n");
+        return;
+    }
+
+    cache->data = (unsigned char *)malloc(total_length);
+    if (cache->data == NULL) {
+        printf("Error: Memory allocation failed.\n");
+        return;
+    }
+
+    cache->total_length = total_length;
+    cache->current_offset = 0;
+}
+
+void free_fragment_cache(struct tls_fragment_cache *cache) {
+    if (cache->data != NULL) {
+        free(cache->data);
+        cache->data = NULL;
+    }
+    cache->total_length = 0;
+    cache->current_offset = 0;
+}
+
+void extend_fragment_cache(struct tls_fragment_cache *cache, int new_size) {
+    if (new_size <= cache->total_length) {
+        return;
+    }
+
+    unsigned char *new_data = (unsigned char *)realloc(cache->data, new_size);
+    if (new_data == NULL) {
+        printf("Error: Memory reallocation failed.\n");
+        return;
+    }
+
+    cache->data = new_data;
+    cache->total_length = new_size;
+}
+
+void append_fragment_to_cache(struct tls_fragment_cache *cache,
+                              const unsigned char *fragment, int fragment_len) {
+    if (cache->current_offset + fragment_len > cache->total_length) {
+        printf("Extending cache size to accommodate new fragment.\n");
+        extend_fragment_cache(cache, cache->current_offset + fragment_len);
+    }
+
+    if (cache->current_offset + fragment_len > cache->total_length) {
+        printf("Error: Fragment length exceeds cache size. Aborting.\n");
+        return;
+    }
+
+    memcpy(cache->data + cache->current_offset, fragment, fragment_len);
+    cache->current_offset += fragment_len;
+}
+
+void parse_tls_app_data(FiveTuple *five_tuple, const unsigned char *payload,
+                        int payload_len) {
+    int header_size = sizeof(struct tls_app_data_header_t);
 
     if (payload_len < header_size) {
         printf(
@@ -134,18 +195,82 @@ void parse_tls_app_data(const unsigned char *payload, int payload_len) {
         return;
     }
 
-    struct tls_application_data_t tls_header;
-    tls_header.content_type = payload[0];
-    tls_header.version = (payload[1] << 8) | payload[2];
-    tls_header.length = (payload[3] << 8) | payload[4];
+    struct tls_app_data_header_t tls_app_data_header;
+    tls_app_data_header.content_type = payload[0];
+    tls_app_data_header.version = (payload[1] << 8) | payload[2];
+    tls_app_data_header.length = (payload[3] << 8) | payload[4];
 
-    if (payload_len < header_size + tls_header.length) {
-        printf("Incomplete TLS Application Data.\n");
+    if (tls_app_data_header.length <= 0 ||
+        tls_app_data_header.length >
+            MAX_PAYLOAD_SIZE) {
+        printf("Error: Invalid TLS length field: %d\n",
+               tls_app_data_header.length);
         return;
     }
 
-    const unsigned char *encrypted_data = payload + header_size;
+    if (tls_hash_table == NULL) {
+        tls_hash_table =
+            create_table(HASH_TABLE_SIZE, hash_five_tuple, compare_five_tuple);
+        if (tls_hash_table == NULL) {
+            printf("Error: Failed to create hash table.\n");
+            return;
+        }
+    }
 
-    printf("Encrypted Data (Hex + ASCII):\n");
-    print_binary_data(encrypted_data, tls_header.length);
+    int result;
+    void *value = NULL;
+    struct tls_fragment_cache *cache = NULL;
+
+    result = tls_hash_table->search(tls_hash_table, five_tuple, &value);
+    if (result == 0 && value != NULL) {
+        cache = (struct tls_fragment_cache *)value;
+    } else {
+        cache = (struct tls_fragment_cache *)malloc(
+            sizeof(struct tls_fragment_cache));
+        if (cache == NULL) {
+            printf("Error: Failed to allocate memory for fragment cache.\n");
+            return;
+        }
+        init_fragment_cache(cache, tls_app_data_header.length);
+        if (cache->data == NULL) {
+            printf("Error: Failed to initialize fragment cache data.\n");
+            free(cache);
+            return;
+        }
+
+        tls_hash_table->insert(tls_hash_table, five_tuple, cache);
+    }
+
+    // 判断是否是 TLS 片段
+    if (payload_len - header_size < tls_app_data_header.length) {
+        printf("Fragmented TLS Application Data. Caching fragment...\n");
+
+        append_fragment_to_cache(cache, payload + header_size,
+                                 payload_len - header_size);
+        return;
+    }
+
+    // 如果没有缓存数据，则解析当前片段
+    if (cache->data == NULL || cache->current_offset == 0) {
+        const unsigned char *encrypted_data = payload + header_size;
+        printf("Encrypted Data (Hex + ASCII):\n");
+        print_binary_data(encrypted_data, tls_app_data_header.length);
+    } else {
+        // 如果已经有缓存的数据，合并并输出
+        printf("Reassembling TLS fragments...\n");
+
+        // 将当前片段数据添加到缓存
+        append_fragment_to_cache(cache, payload + header_size,
+                                 tls_app_data_header.length);
+
+        // 检查缓存的数据长度是否满足 TLS 片段要求
+        if (cache->current_offset >= tls_app_data_header.length) {
+            // 打印缓存中完整的重组数据
+            printf("Reassembled Encrypted Data (Hex + ASCII):\n");
+            print_binary_data(cache->data, cache->current_offset);
+
+            free_fragment_cache(cache);
+            tls_hash_table->delete (tls_hash_table, five_tuple);
+        }
+    }
 }

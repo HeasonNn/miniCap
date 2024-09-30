@@ -25,8 +25,18 @@ void parse_tcp(const char *device_name, const struct pcap_pkthdr *pkthdr,
 
     if (payload_len > 0) {
         if (src_port == TLS_PORT || dst_port == TLS_PORT) {
-            parse_tls(tcp_payload, payload_len);
+            struct in6_addr in6_src_ip, in6_dst_ip;
+            inet_pton(AF_INET6, src_ip, &in6_src_ip);
+            inet_pton(AF_INET6, dst_ip, &in6_dst_ip);
+
+            FiveTuple five_tuple = {.src_ip = in6_src_ip,
+                                    .dst_ip = in6_dst_ip,
+                                    .src_port = src_port,
+                                    .dst_port = dst_port,
+                                    .protocol = IPPROTO_TCP};
+            parse_tls(&five_tuple, tcp_payload, payload_len);
         }
+        return;
     }
 
     // char time_str[64];

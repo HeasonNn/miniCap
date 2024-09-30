@@ -8,6 +8,9 @@
 
 #include "parse.h"
 
+// #define MAX_SNAPLEN 65535
+// #define MAX_SNAPLEN 262144
+
 struct pcap_thread_args {
     pcap_t *handle;
     struct event_base *base;

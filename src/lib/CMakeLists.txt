@@ -2,6 +2,7 @@
 add_library(mylib STATIC
     format_utils.c
     write.c
+    hash_table.c
 )
 
 # 设置包含目录
