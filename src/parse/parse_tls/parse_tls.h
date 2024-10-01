@@ -16,14 +16,12 @@
 #include "../../lib/hash_table.h"
 #include "../../lib/write.h"
 
-#define MAX_PAYLOAD_SIZE 16384
-
 /*
     Function:
     (1) parse ClientHello
     (2) parse ServerHello
-    (3) parse Server certificate
-    (4) parse Application Data
+    (3) parse Application Data
+    (4) parse Server certificate
 */
 
 /*
@@ -94,16 +92,86 @@ TLS Application Data
     +-----------------------------------------------------------+
  */
 
-struct tls_record_header_t {
-    uint8_t content_type;  // Content Type (1 byte)
-    uint16_t version;      // Version (2 bytes)
-    uint16_t length;       // Length (2 bytes)
-};
+#define MAX_PAYLOAD_SIZE 16384
 
 #define TLS_RECORD_TYPE_CHANGE_CIPHER_SPEC 0x14
 #define TLS_RECORD_TYPE_ALERT              0x15
 #define TLS_RECORD_TYPE_HANDSHAKE          0x16
 #define TLS_RECORD_TYPE_APPLICATION_DATA   0x17
+
+#define TLS_PROTOCOL_SSL3   0x0300  // SSL 3.0 (Deprecated)
+#define TLS_PROTOCOL_TLS1_0 0x0301  // TLS 1.0
+#define TLS_PROTOCOL_TLS1_1 0x0302  // TLS 1.1
+#define TLS_PROTOCOL_TLS1_2 0x0303  // TLS 1.2
+#define TLS_PROTOCOL_TLS1_3 0x0304  // TLS 1.3
+
+#define TLS_CLIENT_HELLO 0x01
+#define TLS_SERVER_HELLO 0x02
+
+// Cipher Suites for TLS 1.2 and below
+#define TLS_RSA_WITH_AES_128_GCM_SHA256               0x009C
+#define TLS_RSA_WITH_AES_256_GCM_SHA384               0x009D
+#define TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256         0xC02F
+#define TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384         0xC030
+#define TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256       0xC02B
+#define TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384       0xC02C
+#define TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256   0xCCA8
+#define TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256 0xCCA9
+#define TLS_DHE_RSA_WITH_AES_128_GCM_SHA256           0x009E
+#define TLS_DHE_RSA_WITH_AES_256_GCM_SHA384           0x009F
+#define TLS_DHE_RSA_WITH_CHACHA20_POLY1305_SHA256     0xCCAA
+
+// Cipher Suites for TLS 1.3
+#define TLS_AES_128_GCM_SHA256       0x1301
+#define TLS_AES_256_GCM_SHA384       0x1302
+#define TLS_CHACHA20_POLY1305_SHA256 0x1303
+#define TLS_AES_128_CCM_SHA256       0x1304
+#define TLS_AES_128_CCM_8_SHA256     0x1305
+
+#define TLS_PROTOCOL_NAME(protocol_id)                \
+    (protocol_id == TLS_PROTOCOL_SSL3     ? "SSL 3.0" \
+     : protocol_id == TLS_PROTOCOL_TLS1_0 ? "TLS 1.0" \
+     : protocol_id == TLS_PROTOCOL_TLS1_1 ? "TLS 1.1" \
+     : protocol_id == TLS_PROTOCOL_TLS1_2 ? "TLS 1.2" \
+     : protocol_id == TLS_PROTOCOL_TLS1_3 ? "TLS 1.3" \
+                                          : "TLS/SSL")
+
+#define TLS_CIPHER_SUITE_NAME(cipher_id)                                  \
+    (cipher_id == TLS_RSA_WITH_AES_128_GCM_SHA256                         \
+         ? "TLS_RSA_WITH_AES_128_GCM_SHA256"                              \
+     : cipher_id == TLS_RSA_WITH_AES_256_GCM_SHA384                       \
+         ? "TLS_RSA_WITH_AES_256_GCM_SHA384"                              \
+     : cipher_id == TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256                 \
+         ? "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"                        \
+     : cipher_id == TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384                 \
+         ? "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"                        \
+     : cipher_id == TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256               \
+         ? "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256"                      \
+     : cipher_id == TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384               \
+         ? "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384"                      \
+     : cipher_id == TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256           \
+         ? "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256"                  \
+     : cipher_id == TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256         \
+         ? "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256"                \
+     : cipher_id == TLS_DHE_RSA_WITH_AES_128_GCM_SHA256                   \
+         ? "TLS_DHE_RSA_WITH_AES_128_GCM_SHA256"                          \
+     : cipher_id == TLS_DHE_RSA_WITH_AES_256_GCM_SHA384                   \
+         ? "TLS_DHE_RSA_WITH_AES_256_GCM_SHA384"                          \
+     : cipher_id == TLS_DHE_RSA_WITH_CHACHA20_POLY1305_SHA256             \
+         ? "TLS_DHE_RSA_WITH_CHACHA20_POLY1305_SHA256"                    \
+     : cipher_id == TLS_AES_128_GCM_SHA256 ? "TLS_AES_128_GCM_SHA256"     \
+     : cipher_id == TLS_AES_256_GCM_SHA384 ? "TLS_AES_256_GCM_SHA384"     \
+     : cipher_id == TLS_CHACHA20_POLY1305_SHA256                          \
+         ? "TLS_CHACHA20_POLY1305_SHA256"                                 \
+     : cipher_id == TLS_AES_128_CCM_SHA256   ? "TLS_AES_128_CCM_SHA256"   \
+     : cipher_id == TLS_AES_128_CCM_8_SHA256 ? "TLS_AES_128_CCM_8_SHA256" \
+                                             : "Unknown Cipher Suite")
+
+struct tls_record_header_t {
+    uint8_t content_type;  // Content Type (1 byte)
+    uint16_t version;      // Version (2 bytes)
+    uint16_t length;       // Length (2 bytes)
+};
 
 struct tls_handshake_t {
     uint8_t handshake_type;     // Handshake Type (1 byte)
@@ -111,12 +179,6 @@ struct tls_handshake_t {
     uint16_t protocol_version;  // Protocol Version (2 bytes)
     uint8_t random[32];         // Random (32 bytes)
 } __attribute__((packed));
-
-#define TLS_PROTOCOL_SSL3   0x0300  // SSL 3.0 (Deprecated)
-#define TLS_PROTOCOL_TLS1_0 0x0301  // TLS 1.0
-#define TLS_PROTOCOL_TLS1_1 0x0302  // TLS 1.1
-#define TLS_PROTOCOL_TLS1_2 0x0303  // TLS 1.2
-#define TLS_PROTOCOL_TLS1_3 0x0304  // TLS 1.3
 
 struct tls_client_hello_t {
     struct tls_handshake_t tls_handshake;
@@ -132,16 +194,13 @@ struct tls_client_hello_t {
 
 struct tls_server_hello_t {
     struct tls_handshake_t tls_handshake;
-    uint8_t session_id_length;  
-    uint8_t session_id[32];
+    uint8_t session_id_length;
+    uint8_t *session_id;
     uint16_t cipher_suite;
     uint8_t compression_method;
     uint16_t extensions_length;
-    uint8_t extensions[256];
+    uint8_t *extensions;
 };
-
-#define TLS_CLIENT_HELLO 0x01
-#define TLS_SERVER_HELLO 0x02
 
 struct tls_app_data_header_t {
     uint8_t content_type;  // Content Type (1 byte)

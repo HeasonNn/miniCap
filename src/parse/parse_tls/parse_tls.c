@@ -40,54 +40,128 @@ void parse_tls(FiveTuple *five_tuple, const unsigned char *payload,
 }
 
 void parse_tls_hello(const unsigned char *payload, int payload_len) {
+    if (payload_len < 38) {
+        printf("Invalid Handshake Packet: Payload too short.\n");
+        return;
+    }
+
     if (payload[0] == TLS_SERVER_HELLO) {
-        struct tls_server_hello_t *tls_server_hello =
-            (struct tls_server_hello_t *)payload;
+        struct tls_server_hello_t tls_server_hello;
 
-        const char *protocol = "TLS/SSL";
+        tls_server_hello.tls_handshake.handshake_type = payload[0];
+        memcpy(tls_server_hello.tls_handshake.length, &payload[1], 3);
+        tls_server_hello.tls_handshake.protocol_version =
+            (payload[4] << 8) | payload[5];
+        memcpy(tls_server_hello.tls_handshake.random, &payload[6], 32);
 
-        uint16_t cipher_suite = ntohs(tls_server_hello->cipher_suite);
-        uint16_t extensions_length = ntohs(tls_server_hello->extensions_length);
+        int offset = 38;
+        tls_server_hello.session_id_length = payload[offset++];
 
-        switch (ntohs(tls_server_hello->tls_handshake.protocol_version)) {
-            case TLS_PROTOCOL_SSL3:
-                protocol = "SSL 3.0";
-                break;
-            case TLS_PROTOCOL_TLS1_0:
-                protocol = "TLS 1.0";
-                break;
-            case TLS_PROTOCOL_TLS1_1:
-                protocol = "TLS 1.1";
-                break;
-            case TLS_PROTOCOL_TLS1_2:
-                protocol = "TLS 1.2";
-                break;
-            case TLS_PROTOCOL_TLS1_3:
-                protocol = "TLS 1.3";
-                break;
+        // Parse Session ID
+        if (tls_server_hello.session_id_length > 0) {
+            if (payload_len - offset < tls_server_hello.session_id_length) {
+                printf(
+                    "Invalid ClientHello: Not enough data for Session ID.\n");
+                return;
+            }
+            tls_server_hello.session_id =
+                (uint8_t *)malloc(tls_server_hello.session_id_length);
+            if (!tls_server_hello.session_id) {
+                printf("Memory allocation failed for Session ID.\n");
+                return;
+            }
+            memcpy(tls_server_hello.session_id, &payload[offset],
+                   tls_server_hello.session_id_length);
+            offset += tls_server_hello.session_id_length;
+        } else {
+            tls_server_hello.session_id = NULL;
         }
 
-        printf("ServerHello detected: Protocol Version: %s\n", protocol);
-
-        printf("Random (Hex + ASCII):\n");
-        print_binary_data(tls_server_hello->tls_handshake.random, 32);
-
-        printf("Session ID (Hex + ASCII):\n");
-        print_binary_data(tls_server_hello->session_id,
-                          tls_server_hello->session_id_length);
-
-        printf(
-            "Cipher Suite: 0x%04x, Compression Method: %u, Extensions Length: "
-            "%u\n",
-            cipher_suite, tls_server_hello->compression_method,
-            extensions_length);
-
-    } else if (payload[0] == TLS_CLIENT_HELLO) {
-        if (payload_len < 38) {
-            printf("Invalid ClientHello: Payload too short.\n");
+        // Parse Cipher Suites
+        if (payload_len - offset < 2) {
+            printf(
+                "Invalid ServerHello: Not enough data for Cipher Suites "
+                "length.\n");
+            free(tls_server_hello.session_id);
             return;
         }
+        tls_server_hello.cipher_suite =
+            (payload[offset] << 8) | payload[offset + 1];
+        offset += 2;
 
+        // Parse Compression Method
+        if (payload_len - offset < 1) {
+            printf(
+                "Invalid ServerHello: Not enough data for Compression Method "
+                "length.\n");
+            free(tls_server_hello.session_id);
+            return;
+        }
+        tls_server_hello.compression_method = payload[offset++];
+
+        // Parse Extensions
+        if (payload_len - offset < 2) {
+            printf(
+                "Invalid ServerHello: Not enough data for Extensions "
+                "length.\n");
+            free(tls_server_hello.session_id);
+            return;
+        }
+        tls_server_hello.extensions_length =
+            (payload[offset] << 8) | payload[offset + 1];
+        offset += 2;
+        printf("Payload_len: %d, Offset: %d, Extensions length: %d\n",
+               payload_len, offset, tls_server_hello.extensions_length);
+
+        if (payload_len - offset < tls_server_hello.extensions_length) {
+            printf("Invalid ServerHello: Not enough data for Extensions.\n");
+            free(tls_server_hello.session_id);
+            return;
+        }
+        tls_server_hello.extensions =
+            (uint8_t *)malloc(tls_server_hello.extensions_length);
+        if (!tls_server_hello.extensions) {
+            printf("Memory allocation failed for Extensions.\n");
+            free(tls_server_hello.session_id);
+            return;
+        }
+        memcpy(tls_server_hello.extensions, &payload[offset],
+               tls_server_hello.extensions_length);
+        offset += tls_server_hello.extensions_length;
+
+        // Print Results
+        char *protocol = TLS_PROTOCOL_NAME(
+            ntohs(tls_server_hello.tls_handshake.protocol_version));
+
+        printf("ServerHello detected: Protocol Version: %s\n", protocol);
+        printf("Random (Hex + ASCII):\n");
+        print_binary_data(tls_server_hello.tls_handshake.random, 32);
+
+        printf("Session ID Length: %u, Session ID (Hex + ASCII):\n",
+               tls_server_hello.session_id_length);
+        if (tls_server_hello.session_id_length > 0) {
+            print_binary_data(tls_server_hello.session_id,
+                              tls_server_hello.session_id_length);
+        }
+
+        const char *cipher_suite_name =
+            TLS_CIPHER_SUITE_NAME(tls_server_hello.cipher_suite);
+        printf("Cipher Suite : %s\n", cipher_suite_name);
+
+        printf("Compression Method: %u\n", tls_server_hello.compression_method);
+
+        printf("Extensions Length: %u\n", tls_server_hello.extensions_length);
+        print_binary_data(tls_server_hello.extensions,
+                          tls_server_hello.extensions_length);
+
+        parse_tls_sni_extension(tls_server_hello.extensions,
+                                tls_server_hello.extensions_length);
+
+        // Free Memory
+        free(tls_server_hello.session_id);
+        free(tls_server_hello.extensions);
+
+    } else if (payload[0] == TLS_CLIENT_HELLO) {
         struct tls_client_hello_t tls_client_hello;
 
         // Parse Handshake
@@ -132,8 +206,8 @@ void parse_tls_hello(const unsigned char *payload, int payload_len) {
             (payload[offset] << 8) | payload[offset + 1];
         offset += 2;
 
-        printf("Payload_len: %d, Offset: %d, Cipher suites length: %d\n",
-               payload_len, offset, tls_client_hello.cipher_suites_length);
+        // printf("Payload_len: %d, Offset: %d, Cipher suites length: %d\n",
+        //        payload_len, offset, tls_client_hello.cipher_suites_length);
 
         if (payload_len - offset < tls_client_hello.cipher_suites_length) {
             printf("Invalid ClientHello: Not enough data for Cipher Suites.\n");
@@ -195,6 +269,7 @@ void parse_tls_hello(const unsigned char *payload, int payload_len) {
         tls_client_hello.extensions_length =
             (payload[offset] << 8) | payload[offset + 1];
         offset += 2;
+
         if (payload_len - offset < tls_client_hello.extensions_length) {
             printf("Invalid ClientHello: Not enough data for Extensions.\n");
             free(tls_client_hello.session_id);
@@ -216,26 +291,8 @@ void parse_tls_hello(const unsigned char *payload, int payload_len) {
         offset += tls_client_hello.extensions_length;
 
         // Print Results
-        const char *protocol = "TLS/SSL";
-        switch (ntohs(tls_client_hello.tls_handshake.protocol_version)) {
-            case TLS_PROTOCOL_SSL3:
-                protocol = "SSL 3.0";
-                break;
-            case TLS_PROTOCOL_TLS1_0:
-                protocol = "TLS 1.0";
-                break;
-            case TLS_PROTOCOL_TLS1_1:
-                protocol = "TLS 1.1";
-                break;
-            case TLS_PROTOCOL_TLS1_2:
-                protocol = "TLS 1.2";
-                break;
-            case TLS_PROTOCOL_TLS1_3:
-                protocol = "TLS 1.3";
-                break;
-            default:
-                break;
-        }
+        char *protocol = TLS_PROTOCOL_NAME(
+            ntohs(tls_client_hello.tls_handshake.protocol_version));
 
         printf("ClientHello detected: Protocol Version: %s\n", protocol);
         printf("Random (Hex + ASCII):\n");
@@ -248,6 +305,7 @@ void parse_tls_hello(const unsigned char *payload, int payload_len) {
                               tls_client_hello.session_id_length);
         }
 
+        // TODO:
         printf("Cipher Suites Length: %u, Cipher Suites:\n",
                tls_client_hello.cipher_suites_length);
         print_binary_data((unsigned char *)tls_client_hello.cipher_suites,
