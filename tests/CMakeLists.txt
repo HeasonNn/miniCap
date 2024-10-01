@@ -7,4 +7,4 @@ function(add_test_executable TEST_NAME SOURCE_FILE)
 endfunction()
 
 add_test_executable(test_hash_table test_hash_table.c)
-add_test_executable(test_parse_tls_app_data test_parse_tls_app_data.c)
+add_test_executable(test_parse_tls test_parse_tls.c)

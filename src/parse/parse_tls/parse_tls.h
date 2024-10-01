@@ -94,11 +94,10 @@ TLS Application Data
     +-----------------------------------------------------------+
  */
 
-struct tls_record_t {
+struct tls_record_header_t {
     uint8_t content_type;  // Content Type (1 byte)
     uint16_t version;      // Version (2 bytes)
     uint16_t length;       // Length (2 bytes)
-    uint8_t payload[MAX_PAYLOAD_SIZE];
 };
 
 #define TLS_RECORD_TYPE_CHANGE_CIPHER_SPEC 0x14
@@ -111,8 +110,7 @@ struct tls_handshake_t {
     uint8_t length[3];          // Length (3 bytes)
     uint16_t protocol_version;  // Protocol Version (2 bytes)
     uint8_t random[32];         // Random (32 bytes)
-    uint8_t session_id_length;  // Session ID Length (1 byte)
-};
+} __attribute__((packed));
 
 #define TLS_PROTOCOL_SSL3   0x0300  // SSL 3.0 (Deprecated)
 #define TLS_PROTOCOL_TLS1_0 0x0301  // TLS 1.0
@@ -122,17 +120,19 @@ struct tls_handshake_t {
 
 struct tls_client_hello_t {
     struct tls_handshake_t tls_handshake;
-    uint8_t session_id[32];
-    uint16_t cipher_suites_length;
-    uint16_t cipher_suites[128];
-    uint8_t compression_methods_length;
-    uint8_t compression_methods[16];
-    uint16_t extensions_length;
-    uint8_t extensions[256];
-};
+    uint8_t session_id_length;      // Session ID Length (1 byte)
+    uint8_t *session_id;            // Variable length: Session ID (variable)
+    uint16_t cipher_suites_length;  // 2 bytes: Length of cipher suites
+    uint16_t *cipher_suites;        // Variable length: Cipher suites
+    uint8_t compression_methods_length;  // 1 byte: Compression methods length
+    uint8_t *compression_methods;        // Variable length: Compression methods
+    uint16_t extensions_length;          // 2 bytes: Length of extensions
+    uint8_t *extensions;                 // Variable length: Extensions
+} __attribute__((packed));
 
 struct tls_server_hello_t {
     struct tls_handshake_t tls_handshake;
+    uint8_t session_id_length;  
     uint8_t session_id[32];
     uint16_t cipher_suite;
     uint8_t compression_method;
@@ -143,13 +143,11 @@ struct tls_server_hello_t {
 #define TLS_CLIENT_HELLO 0x01
 #define TLS_SERVER_HELLO 0x02
 
-#pragma pack(1)
 struct tls_app_data_header_t {
     uint8_t content_type;  // Content Type (1 byte)
     uint16_t version;      // Protocol Version (2 bytes)
     uint16_t length;       // Length of encrypted data (2 bytes)
-};
-#pragma pack()
+} __attribute__((packed));
 
 struct tls_fragment_cache {
     unsigned char *data;
@@ -162,3 +160,5 @@ void parse_tls(FiveTuple *five_tuple, const unsigned char *payload,
 void parse_tls_hello(const unsigned char *payload, int payload_len);
 void parse_tls_app_data(FiveTuple *five_tuple, const unsigned char *payload,
                         int payload_len);
+
+void parse_tls_sni_extension(const uint8_t *extensions, int extensions_length);
