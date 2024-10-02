@@ -15,9 +15,9 @@
 #include "parse_tcp.h"
 #include "parse_udp.h"
 
-void parse_ip(const char *device_name, const struct pcap_pkthdr *pkthdr,
-              const unsigned char *packet);
+int parse_ip(const char *device_name, const struct pcap_pkthdr *pkthdr,
+             const unsigned char *packet);
 
-void parse_ipv6(const char *device_name, const struct pcap_pkthdr *pkthdr,
-                const unsigned char *packet,
-                const struct ether_header *ether_header);
+int parse_ipv6(const char *device_name, const struct pcap_pkthdr *pkthdr,
+               const unsigned char *packet,
+               const struct ether_header *ether_header);

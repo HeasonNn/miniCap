@@ -23,6 +23,6 @@
 #define SSL_PORT TLS_PORT
 #endif
 
-void parse_tcp(const char *device_name, const struct pcap_pkthdr *pkthdr,
-               const unsigned char *packet, const struct ip *ip_header,
-               char *src_ip, char *dst_ip);
+int parse_tcp(const char *device_name, const struct pcap_pkthdr *pkthdr,
+              const unsigned char *packet, const struct ip *ip_header,
+              char *src_ip, char *dst_ip);

@@ -16,6 +16,6 @@
 #define MAC_ADDR_LEN 18
 #endif
 
-void parse_arp(const char *user, const struct pcap_pkthdr *pkthdr,
-               const unsigned char *packet,
-               const struct ether_header *eth_header);
+int parse_arp(const char *user, const struct pcap_pkthdr *pkthdr,
+              const unsigned char *packet,
+              const struct ether_header *eth_header);

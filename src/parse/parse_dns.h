@@ -18,5 +18,5 @@ struct dns_header {
     uint16_t arcount;
 };
 
-void parse_dns(const unsigned char *packet, int ip_header_len,
-               int udp_header_len, struct tcp_udp_data_t *dns_data);
+int parse_dns(const unsigned char *packet, int ip_header_len,
+              int udp_header_len, struct tcp_udp_data_t *dns_data);

@@ -1,9 +1,9 @@
 #include "parse_dns.h"
 
-void parse_dns(const unsigned char *packet, int ip_header_len,
-               int udp_header_len, struct tcp_udp_data_t *udp_data) {
-    if (!config.parse_dns) return;
-    
+int parse_dns(const unsigned char *packet, int ip_header_len,
+              int udp_header_len, struct tcp_udp_data_t *udp_data) {
+    if (!config.parse_dns) return 0;
+
     struct dns_header *dns =
         (struct dns_header *)(packet + sizeof(struct ether_header) +
                               ip_header_len + udp_header_len);
@@ -13,7 +13,7 @@ void parse_dns(const unsigned char *packet, int ip_header_len,
     // Check if the DNS packet size is valid
     if (dns_size < sizeof(struct dns_header)) {
         printf("Invalid DNS packet size\n");
-        return;
+        return 0;
     }
 
     // Move to the DNS question section
@@ -38,4 +38,6 @@ void parse_dns(const unsigned char *packet, int ip_header_len,
     };
 
     write_to_file_2(write_dns_to_file, &dns_data_for_write, udp_data->dev_name);
+
+    return 0;
 }

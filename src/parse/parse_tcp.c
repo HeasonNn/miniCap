@@ -1,9 +1,9 @@
 #include "parse_tcp.h"
 
-void parse_tcp(const char *device_name, const struct pcap_pkthdr *pkthdr,
-               const unsigned char *packet, const struct ip *ip_header,
-               char *src_ip, char *dst_ip) {
-    if (!config.parse_tcp) return;
+int parse_tcp(const char *device_name, const struct pcap_pkthdr *pkthdr,
+              const unsigned char *packet, const struct ip *ip_header,
+              char *src_ip, char *dst_ip) {
+    if (!config.parse_tcp) return 0;
 
     const char *protocol = "TCP";
     int src_port = 0, dst_port = 0;
@@ -36,7 +36,7 @@ void parse_tcp(const char *device_name, const struct pcap_pkthdr *pkthdr,
                                     .protocol = IPPROTO_TCP};
             parse_tls(&five_tuple, tcp_payload, payload_len);
         }
-        return;
+        return 0;
     }
 
     // char time_str[64];
@@ -52,5 +52,5 @@ void parse_tcp(const char *device_name, const struct pcap_pkthdr *pkthdr,
 
     // write_to_file_2(write_tcp_to_file, &tcp_data, device_name);
 
-    return;
+    return 0;
 }

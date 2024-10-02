@@ -214,7 +214,7 @@ struct tls_fragment_cache {
     int current_offset;
 };
 
-void parse_tls(FiveTuple *five_tuple, const unsigned char *payload,
+int parse_tls(FiveTuple *five_tuple, const unsigned char *payload,
                int payload_len);
 void parse_tls_hello(const unsigned char *payload, int payload_len);
 void parse_tls_app_data(FiveTuple *five_tuple, const unsigned char *payload,

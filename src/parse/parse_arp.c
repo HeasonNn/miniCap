@@ -1,10 +1,10 @@
 #include "parse_arp.h"
 
-void parse_arp(const char *user, const struct pcap_pkthdr *pkthdr,
-               const unsigned char *packet,
-               const struct ether_header *eth_header) {
-    if (!config.parse_arp) return;
-    
+int parse_arp(const char *user, const struct pcap_pkthdr *pkthdr,
+              const unsigned char *packet,
+              const struct ether_header *eth_header) {
+    if (!config.parse_arp) return 0;
+
     struct arphdr *arphdr =
         (struct arphdr *)(packet + sizeof(struct ether_header));
     char dst_mac[MAC_ADDR_LEN], src_mac[MAC_ADDR_LEN];
@@ -38,4 +38,6 @@ void parse_arp(const char *user, const struct pcap_pkthdr *pkthdr,
                                   .dev_name = user};
 
     write_to_file_2(write_arp_to_file, &arp_data, user);
+
+    return 0;
 }

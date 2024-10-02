@@ -1,7 +1,16 @@
 #include "parse.h"
 
-void parse_func(unsigned char *user, const struct pcap_pkthdr *pkthdr,
-                const unsigned char *packet) {
+void parse_func_handler(unsigned char *user, const struct pcap_pkthdr *pkthdr,
+                        const unsigned char *packet) {
+    int err;
+    err = parse_func(user, pkthdr, packet);
+    if (err) {
+        printf("Parse error, error code: %d", err);
+    }
+}
+
+int parse_func(unsigned char *user, const struct pcap_pkthdr *pkthdr,
+               const unsigned char *packet) {
     struct ether_header *eth_header = (struct ether_header *)packet;
 
     switch (ntohs(eth_header->ether_type)) {
@@ -25,4 +34,6 @@ void parse_func(unsigned char *user, const struct pcap_pkthdr *pkthdr,
             break;
         }
     }
+
+    return 0;
 }

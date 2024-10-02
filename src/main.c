@@ -24,7 +24,7 @@ struct packet_handler_args_t {
 
 void pcap_event_handler(evutil_socket_t fd, short event, void *arg) {
     struct packet_handler_args_t *args = (struct packet_handler_args_t *)arg;
-    int ret = pcap_dispatch(args->handle, -1, parse_func,
+    int ret = pcap_dispatch(args->handle, -1, parse_func_handler,
                             (unsigned char *)args->dev_name);
     if (ret < 0) {
         fprintf(stderr, "Error in pcap_dispatch\n");

@@ -13,5 +13,5 @@
 #include "../lib/format_utils.h"
 #include "../lib/write.h"
 
-void parse_icmp(const char *device_name, const struct pcap_pkthdr *pkthdr,
-                const unsigned char *packet, char *src_ip, char *dst_ip);
+int parse_icmp(const char *device_name, const struct pcap_pkthdr *pkthdr,
+               const unsigned char *packet, char *src_ip, char *dst_ip);

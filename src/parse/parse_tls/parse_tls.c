@@ -2,13 +2,13 @@
 
 static HashTable *tls_hash_table = NULL;
 
-void parse_tls(FiveTuple *five_tuple, const unsigned char *payload,
-               int payload_len) {
-    if (!config.parse_tls) return;
+int parse_tls(FiveTuple *five_tuple, const unsigned char *payload,
+              int payload_len) {
+    if (!config.parse_tls) return 0;
 
     if (payload_len < 5) {
         printf("Payload too short to be a valid TLS record.\n");
-        return;
+        return 1;
     }
 
     struct tls_record_header_t tls_record;
@@ -37,6 +37,7 @@ void parse_tls(FiveTuple *five_tuple, const unsigned char *payload,
         default:
             break;
     }
+    return 0;
 }
 
 void parse_tls_hello(const unsigned char *payload, int payload_len) {
@@ -305,9 +306,10 @@ void parse_tls_hello(const unsigned char *payload, int payload_len) {
                               tls_client_hello.session_id_length);
         }
 
-        // TODO:
         printf("Cipher Suites Length: %u, Cipher Suites:\n",
                tls_client_hello.cipher_suites_length);
+
+        // TODO: Print cipher_suites name, instead of uint16.
         print_binary_data((unsigned char *)tls_client_hello.cipher_suites,
                           tls_client_hello.cipher_suites_length);
 

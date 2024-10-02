@@ -8,3 +8,4 @@ endfunction()
 
 add_test_executable(test_hash_table test_hash_table.c)
 add_test_executable(test_parse_tls test_parse_tls.c)
+add_test_executable(test_redis test_redis.c)
