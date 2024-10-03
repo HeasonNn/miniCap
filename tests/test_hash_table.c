@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../src/lib/hash_table.h"
+#include "hash_table.h"
 
 void test_insert_and_search() {
     HashTable *table = create_table(10, hash_five_tuple, compare_five_tuple);

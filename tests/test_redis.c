@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../src/lib/redis.h"
+#include "redis.h"
 
 void test_redis_func() {
     RedisClient *client = redis_init("127.0.0.1", 6379);

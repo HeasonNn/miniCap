@@ -10,8 +10,8 @@
 #include <pcap.h>
 #include <stdio.h>
 
-#include "../lib/format_utils.h"
-#include "../lib/write.h"
+#include "../format_utils.h"
+#include "../write.h"
 #include "parse_dns.h"
 
 #ifndef DNS_PORT

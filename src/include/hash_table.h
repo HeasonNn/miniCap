@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../include/header.h"
+#include "header.h"
 
 #define HASH_TABLE_SIZE 100
 

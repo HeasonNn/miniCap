@@ -10,10 +10,10 @@
 #include <pcap.h>
 #include <stdio.h>
 
-#include "../include/header.h"
-#include "../lib/format_utils.h"
-#include "../lib/write.h"
-#include "parse_tls/parse_tls.h"
+#include "../header.h"
+#include "../format_utils.h"
+#include "../write.h"
+#include "parse_tls.h"
 
 #ifndef TLS_PORT
 #define TLS_PORT 443

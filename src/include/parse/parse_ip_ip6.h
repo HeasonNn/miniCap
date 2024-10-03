@@ -9,8 +9,8 @@
 #include <pcap.h>
 #include <stdio.h>
 
-#include "../lib/format_utils.h"
-#include "../lib/write.h"
+#include "../format_utils.h"
+#include "../write.h"
 #include "parse_icmp_icmp6.h"
 #include "parse_tcp.h"
 #include "parse_udp.h"

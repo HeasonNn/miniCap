@@ -6,9 +6,9 @@
 
 #include <pcap.h>
 
-#include "../lib/config.h"
-#include "../lib/format_utils.h"
-#include "../lib/write.h"
+#include "../config.h"
+#include "../format_utils.h"
+#include "../write.h"
 #include "parse_arp.h"
 #include "parse_ip_ip6.h"
 

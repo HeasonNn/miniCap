@@ -10,8 +10,8 @@
 #include <pcap.h>
 #include <stdio.h>
 
-#include "../lib/format_utils.h"
-#include "../lib/write.h"
+#include "../format_utils.h"
+#include "../write.h"
 
 int parse_icmp(const char *device_name, const struct pcap_pkthdr *pkthdr,
                const unsigned char *packet, char *src_ip, char *dst_ip);

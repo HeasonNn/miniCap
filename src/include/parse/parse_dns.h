@@ -7,7 +7,7 @@
 #include <netinet/ether.h>
 #include <stdio.h>
 
-#include "../lib/write.h"
+#include "../write.h"
 
 struct dns_header {
     uint16_t id;

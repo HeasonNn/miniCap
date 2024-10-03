@@ -2,10 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../src/include/header.h"
-#include "../src/lib/format_utils.h"
-#include "../src/lib/hash_table.h"
-#include "../src/parse/parse_tls/parse_tls.h"
+#include "header.h"
+#include "format_utils.h"
+#include "hash_table.h"
+#include "parse_tls.h"
 
 void test_parse_tls_app_data() {
     FiveTuple *five_tuple = (FiveTuple *)malloc(sizeof(FiveTuple));

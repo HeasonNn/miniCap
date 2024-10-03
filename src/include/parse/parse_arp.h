@@ -9,8 +9,8 @@
 #include <pcap.h>
 #include <stdio.h>
 
-#include "../lib/format_utils.h"
-#include "../lib/write.h"
+#include "../format_utils.h"
+#include "../write.h"
 
 #ifndef MAC_ADDR_LEN
 #define MAC_ADDR_LEN 18

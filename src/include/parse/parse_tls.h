@@ -11,10 +11,10 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "../../include/header.h"
-#include "../../lib/format_utils.h"
-#include "../../lib/hash_table.h"
-#include "../../lib/write.h"
+#include "../header.h"
+#include "../format_utils.h"
+#include "../hash_table.h"
+#include "../write.h"
 
 /*
     Function:
