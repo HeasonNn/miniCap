@@ -1,20 +1,26 @@
 #include "redis.h"
 
 // 初始化 Redis 客户端
-RedisClient *redis_init(const char *hostname, int port) {
+RedisClient *redis_init(const char *hostname, int port)
+{
     RedisClient *client = (RedisClient *)malloc(sizeof(RedisClient));
-    if (client == NULL) {
+    if (client == NULL)
+    {
         fprintf(stderr, "Failed to allocate memory for RedisClient\n");
         return NULL;
     }
 
     client->context = redisConnect(hostname, port);
-    if (client->context == NULL || client->context->err) {
-        if (client->context) {
+    if (client->context == NULL || client->context->err)
+    {
+        if (client->context)
+        {
             fprintf(stderr, "Redis connection error: %s\n",
                     client->context->errstr);
             redisFree(client->context);
-        } else {
+        }
+        else
+        {
             fprintf(stderr, "Can't allocate Redis context\n");
         }
         free(client);
@@ -26,9 +32,10 @@ RedisClient *redis_init(const char *hostname, int port) {
 }
 
 // 执行 Redis 命令
-redisReply *redis_execute_command(RedisClient *client, const char *format,
-                                  ...) {
-    if (client == NULL || client->context == NULL) {
+redisReply *redis_execute_command(RedisClient *client, const char *format, ...)
+{
+    if (client == NULL || client->context == NULL)
+    {
         fprintf(stderr, "Invalid Redis client or context\n");
         return NULL;
     }
@@ -39,7 +46,8 @@ redisReply *redis_execute_command(RedisClient *client, const char *format,
         (redisReply *)redisvCommand(client->context, format, args);
     va_end(args);
 
-    if (reply == NULL) {
+    if (reply == NULL)
+    {
         fprintf(stderr, "Redis command execution error: %s\n",
                 client->context->errstr);
         return NULL;
@@ -49,16 +57,21 @@ redisReply *redis_execute_command(RedisClient *client, const char *format,
 }
 
 // 释放 Redis 回复对象
-void redis_free_reply(redisReply *reply) {
-    if (reply != NULL) {
+void redis_free_reply(redisReply *reply)
+{
+    if (reply != NULL)
+    {
         freeReplyObject(reply);
     }
 }
 
 // 关闭 Redis 客户端
-void redis_close(RedisClient *client) {
-    if (client != NULL) {
-        if (client->context != NULL) {
+void redis_close(RedisClient *client)
+{
+    if (client != NULL)
+    {
+        if (client->context != NULL)
+        {
             redisFree(client->context);
         }
         free(client);
@@ -66,9 +79,11 @@ void redis_close(RedisClient *client) {
 }
 
 // 设置数据
-int redis_set(RedisClient *client, const char *key, const char *value) {
+int redis_set(RedisClient *client, const char *key, const char *value)
+{
     redisReply *reply = redis_execute_command(client, "SET %s %s", key, value);
-    if (reply == NULL) {
+    if (reply == NULL)
+    {
         return -1;  // 错误
     }
     int success =
@@ -78,14 +93,17 @@ int redis_set(RedisClient *client, const char *key, const char *value) {
 }
 
 // 获取数据
-char *redis_get(RedisClient *client, const char *key) {
+char *redis_get(RedisClient *client, const char *key)
+{
     redisReply *reply = redis_execute_command(client, "GET %s", key);
-    if (reply == NULL) {
+    if (reply == NULL)
+    {
         return NULL;  // 错误
     }
 
     char *value = NULL;
-    if (reply->type == REDIS_REPLY_STRING) {
+    if (reply->type == REDIS_REPLY_STRING)
+    {
         value = strdup(reply->str);  // 复制字符串以返回
     }
     redis_free_reply(reply);
@@ -93,9 +111,11 @@ char *redis_get(RedisClient *client, const char *key) {
 }
 
 // 删除数据
-int redis_delete(RedisClient *client, const char *key) {
+int redis_delete(RedisClient *client, const char *key)
+{
     redisReply *reply = redis_execute_command(client, "DEL %s", key);
-    if (reply == NULL) {
+    if (reply == NULL)
+    {
         return -1;  // 错误
     }
 

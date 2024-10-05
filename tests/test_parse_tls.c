@@ -2,12 +2,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "header.h"
 #include "format_utils.h"
 #include "hash_table.h"
+#include "header.h"
 #include "parse_tls.h"
 
-void test_parse_tls_app_data() {
+void test_parse_tls_app_data()
+{
     FiveTuple *five_tuple = (FiveTuple *)malloc(sizeof(FiveTuple));
     inet_pton(AF_INET, "192.168.1.1", &five_tuple->src_ip);
     inet_pton(AF_INET, "192.168.1.2", &five_tuple->dst_ip);
@@ -29,7 +30,8 @@ void test_parse_tls_app_data() {
     parse_tls_app_data(five_tuple, fragment2, sizeof(fragment2));
 }
 
-void test_parse_tls_client_hello() {
+void test_parse_tls_client_hello()
+{
     FiveTuple *five_tuple = (FiveTuple *)malloc(sizeof(FiveTuple));
     inet_pton(AF_INET, "192.168.1.1", &five_tuple->src_ip);
     inet_pton(AF_INET, "192.168.1.2", &five_tuple->dst_ip);
@@ -83,7 +85,8 @@ void test_parse_tls_client_hello() {
     parse_tls(five_tuple, client_hello, sizeof(client_hello));
 }
 
-void test_parse_tls_server_hello() {
+void test_parse_tls_server_hello()
+{
     FiveTuple *five_tuple = (FiveTuple *)malloc(sizeof(FiveTuple));
     inet_pton(AF_INET, "192.168.1.1", &five_tuple->src_ip);
     inet_pton(AF_INET, "192.168.1.2", &five_tuple->dst_ip);
@@ -134,7 +137,8 @@ void test_parse_tls_server_hello() {
     parse_tls(five_tuple, server_hello, sizeof(server_hello));
 }
 
-int main() {
+int main()
+{
     // test_parse_tls_app_data();
     test_parse_tls_client_hello();
     printf("\n");

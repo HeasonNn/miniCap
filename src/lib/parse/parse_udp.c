@@ -2,7 +2,8 @@
 
 int parse_udp(const char *device_name, const struct pcap_pkthdr *pkthdr,
               const unsigned char *packet, const struct ip *ip_header,
-              char *src_ip, char *dst_ip) {
+              char *src_ip, char *dst_ip)
+{
     if (!config.parse_udp) return 0;
 
     const char *protocol = "UDP";
@@ -22,7 +23,8 @@ int parse_udp(const char *device_name, const struct pcap_pkthdr *pkthdr,
                                       .protocol = protocol,
                                       .packet_size = packet_size};
 
-    if (src_port == DNS_PORT || dst_port == DNS_PORT) {
+    if (src_port == DNS_PORT || dst_port == DNS_PORT)
+    {
         int ip_header_len = ip_header->ip_hl * 4;
         int udp_header_len = sizeof(struct udphdr);
         parse_dns(packet, ip_header_len, udp_header_len, &udp_data);

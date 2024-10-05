@@ -2,7 +2,8 @@
 
 int parse_tcp(const char *device_name, const struct pcap_pkthdr *pkthdr,
               const unsigned char *packet, const struct ip *ip_header,
-              char *src_ip, char *dst_ip) {
+              char *src_ip, char *dst_ip)
+{
     if (!config.parse_tcp) return 0;
 
     const char *protocol = "TCP";
@@ -23,8 +24,10 @@ int parse_tcp(const char *device_name, const struct pcap_pkthdr *pkthdr,
     int payload_len = packet_size - (sizeof(struct ether_header) +
                                      ip_header->ip_hl * 4 + tcp_header_len);
 
-    if (payload_len > 0) {
-        if (src_port == TLS_PORT || dst_port == TLS_PORT) {
+    if (payload_len > 0)
+    {
+        if (src_port == TLS_PORT || dst_port == TLS_PORT)
+        {
             struct in6_addr in6_src_ip, in6_dst_ip;
             inet_pton(AF_INET6, src_ip, &in6_src_ip);
             inet_pton(AF_INET6, dst_ip, &in6_dst_ip);

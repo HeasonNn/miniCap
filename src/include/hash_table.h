@@ -8,13 +8,15 @@
 
 #define HASH_TABLE_SIZE 100
 
-typedef struct HashItem {
+typedef struct HashItem
+{
     void *key;
     void *value;
     struct HashItem *next;
 } HashItem;
 
-typedef struct HashTable {
+typedef struct HashTable
+{
     HashItem **items;
     int size;
     unsigned int (*hash)(void *key);         // 哈希函数指针

@@ -7,7 +7,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef struct {
+typedef struct
+{
     redisContext *context;
 } RedisClient;
 

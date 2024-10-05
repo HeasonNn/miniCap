@@ -2,7 +2,8 @@
 
 #include <stdio.h>
 
-struct config_t {
+struct config_t
+{
     int verbose;
     int parse_tcp;
     int parse_udp;

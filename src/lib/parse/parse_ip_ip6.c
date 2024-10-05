@@ -1,7 +1,8 @@
 #include "parse_ip_ip6.h"
 
 int parse_ip(const char *device_name, const struct pcap_pkthdr *pkthdr,
-             const unsigned char *packet) {
+             const unsigned char *packet)
+{
     if (!config.parse_ip) return 0;
 
     struct ip *ip_header = (struct ip *)(packet + sizeof(struct ether_header));
@@ -10,7 +11,8 @@ int parse_ip(const char *device_name, const struct pcap_pkthdr *pkthdr,
     inet_ntop(AF_INET, &(ip_header->ip_src), src_ip, INET_ADDRSTRLEN);
     inet_ntop(AF_INET, &(ip_header->ip_dst), dst_ip, INET_ADDRSTRLEN);
 
-    switch (ip_header->ip_p) {
+    switch (ip_header->ip_p)
+    {
         case IPPROTO_ICMP:
             parse_icmp(device_name, pkthdr, packet, src_ip, dst_ip);
             break;
@@ -28,7 +30,8 @@ int parse_ip(const char *device_name, const struct pcap_pkthdr *pkthdr,
 
 int parse_ipv6(const char *device_name, const struct pcap_pkthdr *pkthdr,
                const unsigned char *packet,
-               const struct ether_header *ether_header) {
+               const struct ether_header *ether_header)
+{
     if (!config.parse_ipv6) return 0;
 
     char time_str[64];

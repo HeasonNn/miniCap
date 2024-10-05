@@ -11,9 +11,9 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "../header.h"
 #include "../format_utils.h"
 #include "../hash_table.h"
+#include "../header.h"
 #include "../write.h"
 
 /*
@@ -167,20 +167,23 @@ TLS Application Data
      : cipher_id == TLS_AES_128_CCM_8_SHA256 ? "TLS_AES_128_CCM_8_SHA256" \
                                              : "Unknown Cipher Suite")
 
-struct tls_record_header_t {
+struct tls_record_header_t
+{
     uint8_t content_type;  // Content Type (1 byte)
     uint16_t version;      // Version (2 bytes)
     uint16_t length;       // Length (2 bytes)
 };
 
-struct tls_handshake_t {
+struct tls_handshake_t
+{
     uint8_t handshake_type;     // Handshake Type (1 byte)
     uint8_t length[3];          // Length (3 bytes)
     uint16_t protocol_version;  // Protocol Version (2 bytes)
     uint8_t random[32];         // Random (32 bytes)
 } __attribute__((packed));
 
-struct tls_client_hello_t {
+struct tls_client_hello_t
+{
     struct tls_handshake_t tls_handshake;
     uint8_t session_id_length;      // Session ID Length (1 byte)
     uint8_t *session_id;            // Variable length: Session ID (variable)
@@ -192,7 +195,8 @@ struct tls_client_hello_t {
     uint8_t *extensions;                 // Variable length: Extensions
 } __attribute__((packed));
 
-struct tls_server_hello_t {
+struct tls_server_hello_t
+{
     struct tls_handshake_t tls_handshake;
     uint8_t session_id_length;
     uint8_t *session_id;
@@ -202,20 +206,22 @@ struct tls_server_hello_t {
     uint8_t *extensions;
 };
 
-struct tls_app_data_header_t {
+struct tls_app_data_header_t
+{
     uint8_t content_type;  // Content Type (1 byte)
     uint16_t version;      // Protocol Version (2 bytes)
     uint16_t length;       // Length of encrypted data (2 bytes)
 } __attribute__((packed));
 
-struct tls_fragment_cache {
+struct tls_fragment_cache
+{
     unsigned char *data;
     int total_length;
     int current_offset;
 };
 
 int parse_tls(FiveTuple *five_tuple, const unsigned char *payload,
-               int payload_len);
+              int payload_len);
 void parse_tls_hello(const unsigned char *payload, int payload_len);
 void parse_tls_app_data(FiveTuple *five_tuple, const unsigned char *payload,
                         int payload_len);

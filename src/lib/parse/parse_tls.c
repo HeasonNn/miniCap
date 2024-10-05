@@ -3,10 +3,12 @@
 static HashTable *tls_hash_table = NULL;
 
 int parse_tls(FiveTuple *five_tuple, const unsigned char *payload,
-              int payload_len) {
+              int payload_len)
+{
     if (!config.parse_tls) return 0;
 
-    if (payload_len < 5) {
+    if (payload_len < 5)
+    {
         printf("Payload too short to be a valid TLS record.\n");
         return 1;
     }
@@ -19,7 +21,8 @@ int parse_tls(FiveTuple *five_tuple, const unsigned char *payload,
     printf("Sizeof tls_record_t: %ld.\n", sizeof(struct tls_record_header_t));
     printf("Length of tls record payload: %d.\n", tls_record.length);
 
-    switch (tls_record.content_type) {
+    switch (tls_record.content_type)
+    {
         case TLS_RECORD_TYPE_CHANGE_CIPHER_SPEC:
             printf("TLS_RECORD_TYPE_CHANGE_CIPHER_SPEC\n");
             break;
@@ -40,13 +43,16 @@ int parse_tls(FiveTuple *five_tuple, const unsigned char *payload,
     return 0;
 }
 
-void parse_tls_hello(const unsigned char *payload, int payload_len) {
-    if (payload_len < 38) {
+void parse_tls_hello(const unsigned char *payload, int payload_len)
+{
+    if (payload_len < 38)
+    {
         printf("Invalid Handshake Packet: Payload too short.\n");
         return;
     }
 
-    if (payload[0] == TLS_SERVER_HELLO) {
+    if (payload[0] == TLS_SERVER_HELLO)
+    {
         struct tls_server_hello_t tls_server_hello;
 
         tls_server_hello.tls_handshake.handshake_type = payload[0];
@@ -59,27 +65,33 @@ void parse_tls_hello(const unsigned char *payload, int payload_len) {
         tls_server_hello.session_id_length = payload[offset++];
 
         // Parse Session ID
-        if (tls_server_hello.session_id_length > 0) {
-            if (payload_len - offset < tls_server_hello.session_id_length) {
+        if (tls_server_hello.session_id_length > 0)
+        {
+            if (payload_len - offset < tls_server_hello.session_id_length)
+            {
                 printf(
                     "Invalid ClientHello: Not enough data for Session ID.\n");
                 return;
             }
             tls_server_hello.session_id =
                 (uint8_t *)malloc(tls_server_hello.session_id_length);
-            if (!tls_server_hello.session_id) {
+            if (!tls_server_hello.session_id)
+            {
                 printf("Memory allocation failed for Session ID.\n");
                 return;
             }
             memcpy(tls_server_hello.session_id, &payload[offset],
                    tls_server_hello.session_id_length);
             offset += tls_server_hello.session_id_length;
-        } else {
+        }
+        else
+        {
             tls_server_hello.session_id = NULL;
         }
 
         // Parse Cipher Suites
-        if (payload_len - offset < 2) {
+        if (payload_len - offset < 2)
+        {
             printf(
                 "Invalid ServerHello: Not enough data for Cipher Suites "
                 "length.\n");
@@ -91,7 +103,8 @@ void parse_tls_hello(const unsigned char *payload, int payload_len) {
         offset += 2;
 
         // Parse Compression Method
-        if (payload_len - offset < 1) {
+        if (payload_len - offset < 1)
+        {
             printf(
                 "Invalid ServerHello: Not enough data for Compression Method "
                 "length.\n");
@@ -101,7 +114,8 @@ void parse_tls_hello(const unsigned char *payload, int payload_len) {
         tls_server_hello.compression_method = payload[offset++];
 
         // Parse Extensions
-        if (payload_len - offset < 2) {
+        if (payload_len - offset < 2)
+        {
             printf(
                 "Invalid ServerHello: Not enough data for Extensions "
                 "length.\n");
@@ -114,14 +128,16 @@ void parse_tls_hello(const unsigned char *payload, int payload_len) {
         printf("Payload_len: %d, Offset: %d, Extensions length: %d\n",
                payload_len, offset, tls_server_hello.extensions_length);
 
-        if (payload_len - offset < tls_server_hello.extensions_length) {
+        if (payload_len - offset < tls_server_hello.extensions_length)
+        {
             printf("Invalid ServerHello: Not enough data for Extensions.\n");
             free(tls_server_hello.session_id);
             return;
         }
         tls_server_hello.extensions =
             (uint8_t *)malloc(tls_server_hello.extensions_length);
-        if (!tls_server_hello.extensions) {
+        if (!tls_server_hello.extensions)
+        {
             printf("Memory allocation failed for Extensions.\n");
             free(tls_server_hello.session_id);
             return;
@@ -140,7 +156,8 @@ void parse_tls_hello(const unsigned char *payload, int payload_len) {
 
         printf("Session ID Length: %u, Session ID (Hex + ASCII):\n",
                tls_server_hello.session_id_length);
-        if (tls_server_hello.session_id_length > 0) {
+        if (tls_server_hello.session_id_length > 0)
+        {
             print_binary_data(tls_server_hello.session_id,
                               tls_server_hello.session_id_length);
         }
@@ -161,8 +178,9 @@ void parse_tls_hello(const unsigned char *payload, int payload_len) {
         // Free Memory
         free(tls_server_hello.session_id);
         free(tls_server_hello.extensions);
-
-    } else if (payload[0] == TLS_CLIENT_HELLO) {
+    }
+    else if (payload[0] == TLS_CLIENT_HELLO)
+    {
         struct tls_client_hello_t tls_client_hello;
 
         // Parse Handshake
@@ -176,27 +194,33 @@ void parse_tls_hello(const unsigned char *payload, int payload_len) {
         tls_client_hello.session_id_length = payload[offset++];
 
         // Parse Session ID
-        if (tls_client_hello.session_id_length > 0) {
-            if (payload_len - offset < tls_client_hello.session_id_length) {
+        if (tls_client_hello.session_id_length > 0)
+        {
+            if (payload_len - offset < tls_client_hello.session_id_length)
+            {
                 printf(
                     "Invalid ClientHello: Not enough data for Session ID.\n");
                 return;
             }
             tls_client_hello.session_id =
                 (uint8_t *)malloc(tls_client_hello.session_id_length);
-            if (!tls_client_hello.session_id) {
+            if (!tls_client_hello.session_id)
+            {
                 printf("Memory allocation failed for Session ID.\n");
                 return;
             }
             memcpy(tls_client_hello.session_id, &payload[offset],
                    tls_client_hello.session_id_length);
             offset += tls_client_hello.session_id_length;
-        } else {
+        }
+        else
+        {
             tls_client_hello.session_id = NULL;
         }
 
         // Parse Cipher Suites
-        if (payload_len - offset < 2) {
+        if (payload_len - offset < 2)
+        {
             printf(
                 "Invalid ClientHello: Not enough data for Cipher Suites "
                 "length.\n");
@@ -210,14 +234,16 @@ void parse_tls_hello(const unsigned char *payload, int payload_len) {
         // printf("Payload_len: %d, Offset: %d, Cipher suites length: %d\n",
         //        payload_len, offset, tls_client_hello.cipher_suites_length);
 
-        if (payload_len - offset < tls_client_hello.cipher_suites_length) {
+        if (payload_len - offset < tls_client_hello.cipher_suites_length)
+        {
             printf("Invalid ClientHello: Not enough data for Cipher Suites.\n");
             free(tls_client_hello.session_id);
             return;
         }
         tls_client_hello.cipher_suites =
             (uint16_t *)malloc(tls_client_hello.cipher_suites_length);
-        if (!tls_client_hello.cipher_suites) {
+        if (!tls_client_hello.cipher_suites)
+        {
             printf("Memory allocation failed for Cipher Suites.\n");
             free(tls_client_hello.session_id);
             return;
@@ -227,7 +253,8 @@ void parse_tls_hello(const unsigned char *payload, int payload_len) {
         offset += tls_client_hello.cipher_suites_length;
 
         // Parse Compression Methods
-        if (payload_len - offset < 1) {
+        if (payload_len - offset < 1)
+        {
             printf(
                 "Invalid ClientHello: Not enough data for Compression "
                 "Methods.\n");
@@ -236,8 +263,8 @@ void parse_tls_hello(const unsigned char *payload, int payload_len) {
             return;
         }
         tls_client_hello.compression_methods_length = payload[offset++];
-        if (payload_len - offset <
-            tls_client_hello.compression_methods_length) {
+        if (payload_len - offset < tls_client_hello.compression_methods_length)
+        {
             printf(
                 "Invalid ClientHello: Not enough data for Compression "
                 "Methods.\n");
@@ -247,7 +274,8 @@ void parse_tls_hello(const unsigned char *payload, int payload_len) {
         }
         tls_client_hello.compression_methods =
             (uint8_t *)malloc(tls_client_hello.compression_methods_length);
-        if (!tls_client_hello.compression_methods) {
+        if (!tls_client_hello.compression_methods)
+        {
             printf("Memory allocation failed for Compression Methods.\n");
             free(tls_client_hello.session_id);
             free(tls_client_hello.cipher_suites);
@@ -258,7 +286,8 @@ void parse_tls_hello(const unsigned char *payload, int payload_len) {
         offset += tls_client_hello.compression_methods_length;
 
         // Parse Extensions
-        if (payload_len - offset < 2) {
+        if (payload_len - offset < 2)
+        {
             printf(
                 "Invalid ClientHello: Not enough data for Extensions "
                 "length.\n");
@@ -271,7 +300,8 @@ void parse_tls_hello(const unsigned char *payload, int payload_len) {
             (payload[offset] << 8) | payload[offset + 1];
         offset += 2;
 
-        if (payload_len - offset < tls_client_hello.extensions_length) {
+        if (payload_len - offset < tls_client_hello.extensions_length)
+        {
             printf("Invalid ClientHello: Not enough data for Extensions.\n");
             free(tls_client_hello.session_id);
             free(tls_client_hello.cipher_suites);
@@ -280,7 +310,8 @@ void parse_tls_hello(const unsigned char *payload, int payload_len) {
         }
         tls_client_hello.extensions =
             (uint8_t *)malloc(tls_client_hello.extensions_length);
-        if (!tls_client_hello.extensions) {
+        if (!tls_client_hello.extensions)
+        {
             printf("Memory allocation failed for Extensions.\n");
             free(tls_client_hello.session_id);
             free(tls_client_hello.cipher_suites);
@@ -301,7 +332,8 @@ void parse_tls_hello(const unsigned char *payload, int payload_len) {
 
         printf("Session ID Length: %u, Session ID (Hex + ASCII):\n",
                tls_client_hello.session_id_length);
-        if (tls_client_hello.session_id_length > 0) {
+        if (tls_client_hello.session_id_length > 0)
+        {
             print_binary_data(tls_client_hello.session_id,
                               tls_client_hello.session_id_length);
         }
@@ -333,8 +365,10 @@ void parse_tls_hello(const unsigned char *payload, int payload_len) {
     }
 }
 
-void init_fragment_cache(struct tls_fragment_cache *cache, int total_length) {
-    if (total_length <= 0) {
+void init_fragment_cache(struct tls_fragment_cache *cache, int total_length)
+{
+    if (total_length <= 0)
+    {
         printf(
             "Error: Invalid total_length for fragment cache "
             "initialization.\n");
@@ -342,7 +376,8 @@ void init_fragment_cache(struct tls_fragment_cache *cache, int total_length) {
     }
 
     cache->data = (unsigned char *)malloc(total_length);
-    if (cache->data == NULL) {
+    if (cache->data == NULL)
+    {
         printf("Error: Memory allocation failed.\n");
         return;
     }
@@ -351,8 +386,10 @@ void init_fragment_cache(struct tls_fragment_cache *cache, int total_length) {
     cache->current_offset = 0;
 }
 
-void free_fragment_cache(struct tls_fragment_cache *cache) {
-    if (cache->data != NULL) {
+void free_fragment_cache(struct tls_fragment_cache *cache)
+{
+    if (cache->data != NULL)
+    {
         free(cache->data);
         cache->data = NULL;
     }
@@ -360,13 +397,16 @@ void free_fragment_cache(struct tls_fragment_cache *cache) {
     cache->current_offset = 0;
 }
 
-void extend_fragment_cache(struct tls_fragment_cache *cache, int new_size) {
-    if (new_size <= cache->total_length) {
+void extend_fragment_cache(struct tls_fragment_cache *cache, int new_size)
+{
+    if (new_size <= cache->total_length)
+    {
         return;
     }
 
     unsigned char *new_data = (unsigned char *)realloc(cache->data, new_size);
-    if (new_data == NULL) {
+    if (new_data == NULL)
+    {
         printf("Error: Memory reallocation failed.\n");
         return;
     }
@@ -376,13 +416,16 @@ void extend_fragment_cache(struct tls_fragment_cache *cache, int new_size) {
 }
 
 void append_fragment_to_cache(struct tls_fragment_cache *cache,
-                              const unsigned char *fragment, int fragment_len) {
-    if (cache->current_offset + fragment_len > cache->total_length) {
+                              const unsigned char *fragment, int fragment_len)
+{
+    if (cache->current_offset + fragment_len > cache->total_length)
+    {
         printf("Extending cache size to accommodate new fragment.\n");
         extend_fragment_cache(cache, cache->current_offset + fragment_len);
     }
 
-    if (cache->current_offset + fragment_len > cache->total_length) {
+    if (cache->current_offset + fragment_len > cache->total_length)
+    {
         printf("Error: Fragment length exceeds cache size. Aborting.\n");
         return;
     }
@@ -392,10 +435,12 @@ void append_fragment_to_cache(struct tls_fragment_cache *cache,
 }
 
 void parse_tls_app_data(FiveTuple *five_tuple, const unsigned char *payload,
-                        int payload_len) {
+                        int payload_len)
+{
     int header_size = sizeof(struct tls_app_data_header_t);
 
-    if (payload_len < header_size) {
+    if (payload_len < header_size)
+    {
         printf(
             "Payload too short to be a valid TLS Application Data "
             "record.\n");
@@ -408,16 +453,19 @@ void parse_tls_app_data(FiveTuple *five_tuple, const unsigned char *payload,
     tls_app_data_header.length = (payload[3] << 8) | payload[4];
 
     if (tls_app_data_header.length <= 0 ||
-        tls_app_data_header.length > MAX_PAYLOAD_SIZE) {
+        tls_app_data_header.length > MAX_PAYLOAD_SIZE)
+    {
         printf("Error: Invalid TLS length field: %d\n",
                tls_app_data_header.length);
         return;
     }
 
-    if (tls_hash_table == NULL) {
+    if (tls_hash_table == NULL)
+    {
         tls_hash_table =
             create_table(HASH_TABLE_SIZE, hash_five_tuple, compare_five_tuple);
-        if (tls_hash_table == NULL) {
+        if (tls_hash_table == NULL)
+        {
             printf("Error: Failed to create hash table.\n");
             return;
         }
@@ -428,17 +476,22 @@ void parse_tls_app_data(FiveTuple *five_tuple, const unsigned char *payload,
     struct tls_fragment_cache *cache = NULL;
 
     result = tls_hash_table->search(tls_hash_table, five_tuple, &value);
-    if (result == 0 && value != NULL) {
+    if (result == 0 && value != NULL)
+    {
         cache = (struct tls_fragment_cache *)value;
-    } else {
+    }
+    else
+    {
         cache = (struct tls_fragment_cache *)malloc(
             sizeof(struct tls_fragment_cache));
-        if (cache == NULL) {
+        if (cache == NULL)
+        {
             printf("Error: Failed to allocate memory for fragment cache.\n");
             return;
         }
         init_fragment_cache(cache, tls_app_data_header.length);
-        if (cache->data == NULL) {
+        if (cache->data == NULL)
+        {
             printf("Error: Failed to initialize fragment cache data.\n");
             free(cache);
             return;
@@ -448,23 +501,28 @@ void parse_tls_app_data(FiveTuple *five_tuple, const unsigned char *payload,
     }
 
     // 判断是否是 TLS 片段
-    if (payload_len - header_size < tls_app_data_header.length) {
+    if (payload_len - header_size < tls_app_data_header.length)
+    {
         printf("Fragmented TLS Application Data. Caching fragment...\n");
 
         append_fragment_to_cache(cache, payload + header_size,
                                  payload_len - header_size);
     }
 
-    if (cache->data == NULL || cache->current_offset == 0) {
+    if (cache->data == NULL || cache->current_offset == 0)
+    {
         const unsigned char *encrypted_data = payload + header_size;
         printf("Encrypted Data (Hex + ASCII):\n");
         print_binary_data(encrypted_data, tls_app_data_header.length);
-    } else {
+    }
+    else
+    {
         printf("Reassembling TLS fragments...\n");
 
         // printf("Current offset: %d\n", cache->current_offset);
 
-        if (cache->current_offset >= tls_app_data_header.length) {
+        if (cache->current_offset >= tls_app_data_header.length)
+        {
             printf("Reassembled Encrypted Data (Hex + ASCII):\n");
             print_binary_data(cache->data, cache->current_offset);
 
@@ -474,10 +532,12 @@ void parse_tls_app_data(FiveTuple *five_tuple, const unsigned char *payload,
     }
 }
 
-void parse_tls_sni_extension(const uint8_t *extensions, int extensions_length) {
+void parse_tls_sni_extension(const uint8_t *extensions, int extensions_length)
+{
     int offset = 0;
 
-    while (offset + 4 <= extensions_length) {
+    while (offset + 4 <= extensions_length)
+    {
         // Each extension has a type (2 bytes) and length (2 bytes)
         uint16_t ext_type = (extensions[offset] << 8) | extensions[offset + 1];
         uint16_t ext_length =
@@ -485,8 +545,10 @@ void parse_tls_sni_extension(const uint8_t *extensions, int extensions_length) {
         offset += 4;
 
         // Check if this is the SNI extension (type 0x0000)
-        if (ext_type == 0x0000) {
-            if (ext_length < 5) {
+        if (ext_type == 0x0000)
+        {
+            if (ext_length < 5)
+            {
                 printf("Invalid SNI extension length.\n");
                 return;
             }
@@ -496,7 +558,8 @@ void parse_tls_sni_extension(const uint8_t *extensions, int extensions_length) {
                 (extensions[offset] << 8) | extensions[offset + 1];
             offset += 2;
 
-            if (sni_list_length + 2 > ext_length) {
+            if (sni_list_length + 2 > ext_length)
+            {
                 printf("SNI list length mismatch.\n");
                 return;
             }
@@ -507,7 +570,8 @@ void parse_tls_sni_extension(const uint8_t *extensions, int extensions_length) {
                 (extensions[offset + 1] << 8) | extensions[offset + 2];
             offset += 3;
 
-            if (sni_type != 0x00 || sni_name_length + 3 > sni_list_length) {
+            if (sni_type != 0x00 || sni_name_length + 3 > sni_list_length)
+            {
                 printf("Invalid SNI entry.\n");
                 return;
             }

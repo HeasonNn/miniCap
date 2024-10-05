@@ -1,7 +1,8 @@
 #include "parse_dns.h"
 
 int parse_dns(const unsigned char *packet, int ip_header_len,
-              int udp_header_len, struct tcp_udp_data_t *udp_data) {
+              int udp_header_len, struct tcp_udp_data_t *udp_data)
+{
     if (!config.parse_dns) return 0;
 
     struct dns_header *dns =
@@ -11,7 +12,8 @@ int parse_dns(const unsigned char *packet, int ip_header_len,
                                             ip_header_len + udp_header_len);
 
     // Check if the DNS packet size is valid
-    if (dns_size < sizeof(struct dns_header)) {
+    if (dns_size < sizeof(struct dns_header))
+    {
         printf("Invalid DNS packet size\n");
         return 0;
     }
@@ -22,10 +24,14 @@ int parse_dns(const unsigned char *packet, int ip_header_len,
     // Extract the domain name from the query
     char domain_name[256];
     int pos = 0, i = 0;
-    while (dns_data[i] != 0 && pos < sizeof(domain_name) - 1) {
-        if (dns_data[i] < 32) {
+    while (dns_data[i] != 0 && pos < sizeof(domain_name) - 1)
+    {
+        if (dns_data[i] < 32)
+        {
             domain_name[pos++] = '.';
-        } else {
+        }
+        else
+        {
             domain_name[pos++] = dns_data[i];
         }
         i++;

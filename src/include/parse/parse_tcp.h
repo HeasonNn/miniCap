@@ -10,8 +10,8 @@
 #include <pcap.h>
 #include <stdio.h>
 
-#include "../header.h"
 #include "../format_utils.h"
+#include "../header.h"
 #include "../write.h"
 #include "parse_tls.h"
 

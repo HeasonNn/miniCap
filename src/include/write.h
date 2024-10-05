@@ -20,7 +20,8 @@
 
 typedef void (*write_func_t)(FILE *, const void *);
 
-struct tcp_udp_data_t {
+struct tcp_udp_data_t
+{
     const char *dev_name;
     const char *src_ip;
     const char *dst_ip;
@@ -30,7 +31,8 @@ struct tcp_udp_data_t {
     int packet_size;
 };
 
-struct icmp_data_t {
+struct icmp_data_t
+{
     const char *dev_name;
     const char *src_ip;
     const char *dst_ip;
@@ -38,12 +40,14 @@ struct icmp_data_t {
     int packet_size;
 };
 
-struct dns_data_t {
+struct dns_data_t
+{
     struct tcp_udp_data_t *udp_data;
     const char *dns_query;
 };
 
-struct arp_data_t {
+struct arp_data_t
+{
     const char *dev_name;
     const char *src_mac;
     const char *dst_mac;
@@ -51,7 +55,8 @@ struct arp_data_t {
     int packet_size;
 };
 
-struct file_cache_t {
+struct file_cache_t
+{
     const char *dev_name;
     FILE *file_ptr;
 };

@@ -1,7 +1,8 @@
 #pragma once
 #include <arpa/inet.h>
 
-typedef struct {
+typedef struct
+{
     struct in6_addr src_ip;
     struct in6_addr dst_ip;
     int src_port;
@@ -9,4 +10,3 @@ typedef struct {
     int protocol;
     int is_ipv6;
 } FiveTuple;
-

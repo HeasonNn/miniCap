@@ -9,7 +9,8 @@
 
 #include "../write.h"
 
-struct dns_header {
+struct dns_header
+{
     uint16_t id;
     uint16_t flags;
     uint16_t qdcount;

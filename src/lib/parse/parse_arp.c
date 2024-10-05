@@ -2,7 +2,8 @@
 
 int parse_arp(const char *user, const struct pcap_pkthdr *pkthdr,
               const unsigned char *packet,
-              const struct ether_header *eth_header) {
+              const struct ether_header *eth_header)
+{
     if (!config.parse_arp) return 0;
 
     struct arphdr *arphdr =
@@ -13,7 +14,8 @@ int parse_arp(const char *user, const struct pcap_pkthdr *pkthdr,
     mac_to_string(eth_header->ether_shost, src_mac);
 
     const char *protocol = "ARP";
-    switch (ntohs(arphdr->ar_op)) {
+    switch (ntohs(arphdr->ar_op))
+    {
         case ARPOP_REQUEST:
             protocol = "ARP Request";
             break;

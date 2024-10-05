@@ -1,7 +1,8 @@
 #include "parse_icmp_icmp6.h"
 
 int parse_icmp(const char *device_name, const struct pcap_pkthdr *pkthdr,
-               const unsigned char *packet, char *src_ip, char *dst_ip) {
+               const unsigned char *packet, char *src_ip, char *dst_ip)
+{
     if (!config.parse_icmp) return 0;
 
     struct icmphdr *icmp_header =
@@ -12,7 +13,8 @@ int parse_icmp(const char *device_name, const struct pcap_pkthdr *pkthdr,
     get_timestamp(time_str, sizeof(time_str));
 
     const char *protocol = "ICMP";
-    switch (icmp_header->type) {
+    switch (icmp_header->type)
+    {
         case ICMP_ECHO:
             protocol = "ICMP Echo Request";
             break;
